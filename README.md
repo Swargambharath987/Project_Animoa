@@ -18,6 +18,6 @@ Animoa is a web application built with [Streamlit](https://streamlit.io/), offer
 * [Supabase](https://supabase.com/) (for saving user data)
 * Python (the main code language)
 
-## Why this project is cool (1-2 simple sentences):
+## Why this project is cool:
 
 Animoa shows how technology can be used to support mental well-being in an accessible and user-friendly way. It combines AI with a simple interface to offer helpful features.

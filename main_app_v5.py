@@ -1,4 +1,13 @@
 import streamlit as st
+
+# Setting page configuration at the very beginning of the file
+st.set_page_config(
+    page_title="Animoa | Mental Health Companion", 
+    page_icon="🧠",
+    layout="wide",
+    initial_sidebar_state="collapsed"
+)
+
 from groq import Groq
 from supabase import create_client, Client
 from dotenv import load_dotenv
@@ -729,7 +738,7 @@ def mental_health_advisory():
     
     st.header("Mental Health Advisory") # Keep this for consistency
     st.subheader("Explore your personalized wellness insights") # Add a friendly subtitle
-    st.write(translations["answer_questions"])
+    #st.write(translations["answer_questions"])
     
     if "questionnaire_submitted" not in st.session_state:
         st.session_state.questionnaire_submitted = False
@@ -1200,14 +1209,6 @@ def about_section():
                     st.error(f"Error saving feedback: {str(e)}")
 
 def main():
-    # Set page configuration
-    st.set_page_config(
-        page_title="Animoa | Mental Health Companion", 
-        page_icon="🧠",
-        layout="wide",
-        initial_sidebar_state="collapsed"
-    )
-    
     # Restore Supabase session with retry logic , if tokens exist
     if "access_token" in st.session_state and "refresh_token" in st.session_state:
         max_retries = 3
@@ -1322,5 +1323,6 @@ def main():
         if st.button("🚪 " + translations["logout"], key="sidebar_logout_main", use_container_width=True):
             st.session_state.show_logout_feedback = True
             st.rerun()
+            
 if __name__ == "__main__":
     main()

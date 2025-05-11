@@ -496,11 +496,31 @@ class MentalHealthChatbot:
             response = supabase.table('chat_history').select('*').eq('session_id', session_id).order('timestamp', desc=False).execute()
             
             if response and response.data:
+                message_data = []
+                feedback_data = {}
+                
+                # First, separate messages from feedback
                 for msg in response.data:
                     if msg['sender'] == 'user':
-                        st.session_state.messages.append({"role": "user", "content": msg['message']})
-                    else:
-                        st.session_state.messages.append({"role": "assistant", "content": msg['message']})
+                        message_data.append({"role": "user", "content": msg['message']})
+                    elif msg['sender'] == 'bot':
+                        message_data.append({"role": "assistant", "content": msg['message']})
+                    elif msg['sender'] == 'feedback':
+                        # Store feedback data with message index as key
+                        if 'feedback_for_message_index' in msg:
+                            index = msg['feedback_for_message_index']
+                            feedback_data[index] = msg['message']
+                
+                # Add messages to session state
+                st.session_state.messages = message_data
+                
+                # Process feedback and update session state
+                for index, feedback in feedback_data.items():
+                    if index < len(message_data):
+                        feedback_key = f"has_feedback_{session_id}_{index}"
+                        feedback_type_key = f"feedback_type_{session_id}_{index}"
+                        st.session_state[feedback_key] = True
+                        st.session_state[feedback_type_key] = feedback
         except Exception as e:
             st.warning(f"Could not load chat history: {str(e)}")
     
@@ -531,6 +551,11 @@ class MentalHealthChatbot:
             st.session_state.current_session_id = new_session_id
             st.session_state.messages = []  # Clear messages for new session
             
+            # Clear any feedback-related session state variables for previous sessions
+            for key in list(st.session_state.keys()):
+                if key.startswith("has_feedback_") or key.startswith("feedback_type_") or key.startswith("show_detailed_feedback_"):
+                    del st.session_state[key]
+            
             return new_session_id
         except Exception as e:
             st.warning(f"Could not create new session: {str(e)}")
@@ -551,17 +576,50 @@ class MentalHealthChatbot:
                     'user_id': st.session_state.user.id,
                     'session_id': session_id,
                     'message': content,
-                    'sender': 'user' if role == 'user' else 'bot'
+                    'sender': 'user' if role == 'user' else 'bot',
+                    'timestamp': datetime.datetime.now().isoformat()  # Add timestamp
                 }
                 
                 if role == "feedback" and message_index is not None:
+                    # For feedback, properly set the fields
                     message_data['feedback_for_message_index'] = message_index
-                    message_data['sender'] = 'feedback' #overwrite the sender
+                    message_data['sender'] = 'feedback'  # overwrite the sender
+                    
+                    # Check if feedback already exists for this message to avoid duplicates
+                    existing = supabase.table('chat_history').select('id')\
+                        .eq('user_id', st.session_state.user.id)\
+                        .eq('session_id', session_id)\
+                        .eq('sender', 'feedback')\
+                        .eq('feedback_for_message_index', message_index)\
+                        .execute()
+                        
+                    if existing.data and len(existing.data) > 0:
+                        # Update existing feedback instead of creating a new one
+                        supabase.table('chat_history').update({
+                            'message': content,
+                            'timestamp': datetime.datetime.now().isoformat()
+                        }).eq('id', existing.data[0]['id']).execute()
+                        
+                        # Update the session state to reflect this change
+                        feedback_key = f"has_feedback_{session_id}_{message_index}"
+                        feedback_type_key = f"feedback_type_{session_id}_{message_index}"
+                        st.session_state[feedback_key] = True
+                        st.session_state[feedback_type_key] = content
+                        
+                        return
                 
-                supabase.table('chat_history').insert(message_data).execute()
+                # Insert new message/feedback
+                result = supabase.table('chat_history').insert(message_data).execute()
+                
+                # If this is a feedback message, update the session state
+                if role == "feedback" and message_index is not None:
+                    feedback_key = f"has_feedback_{session_id}_{message_index}"
+                    feedback_type_key = f"feedback_type_{session_id}_{message_index}"
+                    st.session_state[feedback_key] = True
+                    st.session_state[feedback_type_key] = content
+                    
             except Exception as e:
                 st.warning(f"Could not save message to database: {str(e)}")
-    
     def generate_response(self, user_input, conversation_history):
         """Generate response using Groq API with conversation context and in user's language"""
         try:
@@ -696,6 +754,11 @@ class MentalHealthChatbot:
             
             with chat_interface:
                 # Add delete option and translation options in a row
+                # Inside the MentalHealthChatbot.run() method, in the chat_interface section:
+
+                # Inside the MentalHealthChatbot.run() method, in the chat_interface section:
+
+                # Add delete option and translation options in a row at the top
                 if st.session_state.messages:
                     cols = st.columns([1, 1])
                     with cols[0]:
@@ -706,33 +769,54 @@ class MentalHealthChatbot:
                     with cols[1]:
                         if st.button("🗑️ Delete Chat", key="simple_delete_chat"):
                             if st.session_state.current_session_id:
-                                # Show confirmation
-                                st.warning("Are you sure you want to delete this conversation? This cannot be undone.")
-                                confirm_cols = st.columns([1, 1])
-                                with confirm_cols[0]:
-                                    if st.button("Yes, delete it", key="simple_confirm_delete"):
-                                        try:
-                                            # Delete all messages in this chat
-                                            supabase.table('chat_history').delete().eq('session_id', st.session_state.current_session_id).execute()
-                                            
-                                            # Delete the session itself
-                                            supabase.table('chat_sessions').delete().eq('id', st.session_state.current_session_id).execute()
-                                            
-                                            # Clear local state
-                                            if st.session_state.current_session_id in st.session_state.chat_sessions:
-                                                del st.session_state.chat_sessions[st.session_state.current_session_id]
-                                            
-                                            st.session_state.current_session_id = None
-                                            st.session_state.messages = []
-                                            
-                                            st.success("Conversation deleted successfully.")
-                                            st.rerun()
-                                        except Exception as e:
-                                            st.error(f"Error deleting conversation: {str(e)}")
-                                
-                                with confirm_cols[1]:
-                                    if st.button("Cancel", key="simple_cancel_delete"):
-                                        st.rerun()
+                                # Use session state to track confirmation state
+                                st.session_state.show_delete_confirm = True
+                                st.session_state.delete_session_id = st.session_state.current_session_id
+                                st.rerun()
+
+                    # Handle deletion confirmation outside other containers
+                    if "show_delete_confirm" in st.session_state and st.session_state.show_delete_confirm:
+                        # Check if we're still on the same session that was marked for deletion
+                        if st.session_state.get("delete_session_id") == st.session_state.current_session_id:
+                            st.warning("Are you sure you want to delete this conversation? This cannot be undone.")
+                            
+                            # Use layout without nested columns
+                            if st.button("Yes, delete it", key="confirm_delete_simple"):
+                                try:
+                                    # Delete all messages in this chat
+                                    supabase.table('chat_history').delete().eq('session_id', st.session_state.current_session_id).execute()
+                                    
+                                    # Delete the session itself
+                                    supabase.table('chat_sessions').delete().eq('id', st.session_state.current_session_id).execute()
+                                    
+                                    # Clear local state
+                                    if st.session_state.current_session_id in st.session_state.chat_sessions:
+                                        del st.session_state.chat_sessions[st.session_state.current_session_id]
+                                    
+                                    # Clear current session and messages
+                                    st.session_state.current_session_id = None
+                                    st.session_state.messages = []
+                                    
+                                    # Clear the confirmation states
+                                    del st.session_state.show_delete_confirm
+                                    del st.session_state.delete_session_id
+                                    
+                                    st.success("Conversation deleted successfully.")
+                                    st.rerun()
+                                except Exception as e:
+                                    st.error(f"Error deleting conversation: {str(e)}")
+                            
+                            if st.button("Cancel", key="cancel_delete_simple"):
+                                del st.session_state.show_delete_confirm
+                                if "delete_session_id" in st.session_state:
+                                    del st.session_state.delete_session_id
+                                st.rerun()
+                        else:
+                            # If user switched to another session, clear the delete confirmation
+                            del st.session_state.show_delete_confirm
+                            if "delete_session_id" in st.session_state:
+                                del st.session_state.delete_session_id
+                            st.rerun()
                 
                 # First create a container for messages
                 messages_container = st.container()
@@ -751,71 +835,126 @@ class MentalHealthChatbot:
                                     </div>
                                     """, unsafe_allow_html=True)
                     
-                    # Display chat history                    
+                    # Display chat history                   
                     for i, message in enumerate(st.session_state.messages):
                         with st.chat_message(message["role"]):
                             st.markdown(message["content"])
-                            # For the latest message only, show a more streamlined feedback UI
+                            # For the latest assistant message only, show feedback UI
+                            # For the latest assistant message only, show feedback UI
+                            # Replace the feedback section in the MentalHealthChatbot.run method with this improved code
+
+                            # For the latest assistant message only, show feedback UI
                             if message["role"] == "assistant" and i == len(st.session_state.messages) - 1:  # Only for the latest assistant message
-                                # Create a horizontal container for the feedback options
+                                # Create a container for the feedback options
                                 feedback_container = st.container()
                                 with feedback_container:
-                                    # Use session state to track if feedback was given
-                                    feedback_key = f"feedback_given_{i}"
+                                    # Check if feedback exists in database for this message
+                                    has_feedback = False
+                                    feedback_type = None
+                                    
+                                    if "user" in st.session_state:
+                                        try:
+                                            # Message index in session is used as reference in database
+                                            # Check if feedback exists for this message
+                                            response = supabase.table('chat_history').select('*')\
+                                                .eq('user_id', st.session_state.user.id)\
+                                                .eq('session_id', st.session_state.current_session_id)\
+                                                .eq('sender', 'feedback')\
+                                                .eq('feedback_for_message_index', i)\
+                                                .execute()
+                                                
+                                            if response.data and len(response.data) > 0:
+                                                has_feedback = True
+                                                feedback_type = response.data[0]['message']
+                                        except Exception as e:
+                                            print(f"Error checking feedback: {str(e)}")
+
+                                    # Store has_feedback in session state to ensure consistency across reruns
+                                    feedback_key = f"has_feedback_{st.session_state.current_session_id}_{i}"
                                     if feedback_key not in st.session_state:
-                                        st.session_state[feedback_key] = False
+                                        st.session_state[feedback_key] = has_feedback
+                                        st.session_state[f"feedback_type_{st.session_state.current_session_id}_{i}"] = feedback_type
                                     
                                     # Only show feedback options if feedback hasn't been given yet
                                     if not st.session_state[feedback_key]:
                                         # Use columns to create a horizontal layout
-                                        fb_col1, fb_col2, fb_col3, fb_col4, fb_col5 = st.columns([1, 1, 1, 1, 3])
+                                        fb_col1, fb_col2, fb_col3, fb_col4, fb_col5, fb_col6 = st.columns([1, 1, 1, 1, 1, 3])
                                         
                                         with fb_col1:
-                                            if st.button("😊", key=f"happy_{i}", help="Helpful response"):
+                                            if st.button("😊", key=f"happy_{st.session_state.current_session_id}_{i}", help="Helpful response"):
                                                 self.save_message("feedback", "😊 Helpful", i)
                                                 st.session_state[feedback_key] = True
-                                                st.session_state[f"feedback_type_{i}"] = "😊 Helpful"
+                                                st.session_state[f"feedback_type_{st.session_state.current_session_id}_{i}"] = "😊 Helpful"
                                                 st.success("Thank you for your feedback!")
+                                                time.sleep(0.5)
+                                                st.rerun()
                                                 
                                         with fb_col2:
-                                            if st.button("🤔", key=f"thinking_{i}", help="Made me think"):
+                                            if st.button("🤔", key=f"thinking_{st.session_state.current_session_id}_{i}", help="Made me think"):
                                                 self.save_message("feedback", "🤔 Thoughtful", i)
                                                 st.session_state[feedback_key] = True
-                                                st.session_state[f"feedback_type_{i}"] = "🤔 Thoughtful"
+                                                st.session_state[f"feedback_type_{st.session_state.current_session_id}_{i}"] = "🤔 Thoughtful"
                                                 st.success("Thank you for your feedback!")
-                                                
+                                                time.sleep(0.5)
+                                                st.rerun()
+                                        
                                         with fb_col3:
-                                            if st.button("👍", key=f"thumbs_up_{i}", help="Great response"):
-                                                self.save_message("feedback", "👍 Great", i)
+                                            if st.button("❤️", key=f"heart_{st.session_state.current_session_id}_{i}", help="Love this response"):
+                                                self.save_message("feedback", "❤️ Love it", i)
                                                 st.session_state[feedback_key] = True
-                                                st.session_state[f"feedback_type_{i}"] = "👍 Great"
+                                                st.session_state[f"feedback_type_{st.session_state.current_session_id}_{i}"] = "❤️ Love it"
                                                 st.success("Thank you for your feedback!")
+                                                time.sleep(0.5)
+                                                st.rerun()
                                                 
                                         with fb_col4:
-                                            if st.button("👎", key=f"thumbs_down_{i}", help="Not helpful"):
+                                            if st.button("👍", key=f"thumbs_up_{st.session_state.current_session_id}_{i}", help="Great response"):
+                                                self.save_message("feedback", "👍 Great", i)
+                                                st.session_state[feedback_key] = True
+                                                st.session_state[f"feedback_type_{st.session_state.current_session_id}_{i}"] = "👍 Great"
+                                                st.success("Thank you for your feedback!")
+                                                time.sleep(0.5)
+                                                st.rerun()
+                                                
+                                        with fb_col5:
+                                            if st.button("👎", key=f"thumbs_down_{st.session_state.current_session_id}_{i}", help="Not helpful"):
                                                 # Show a small popup for more detailed feedback if negative
-                                                st.session_state[f"show_detailed_feedback_{i}"] = True
+                                                st.session_state[f"show_detailed_feedback_{st.session_state.current_session_id}_{i}"] = True
                                                 self.save_message("feedback", "👎 Not helpful", i)
                                                 st.session_state[feedback_key] = True
-                                                st.session_state[f"feedback_type_{i}"] = "👎 Not helpful"
+                                                st.session_state[f"feedback_type_{st.session_state.current_session_id}_{i}"] = "👎 Not helpful"
                                                 st.warning("Sorry this wasn't helpful.")
+                                                time.sleep(0.5)
+                                                st.rerun()
                                         
-                                        with fb_col5:
+                                        with fb_col6:
                                             # Only show the detailed feedback field if thumbs down was clicked
-                                            if f"show_detailed_feedback_{i}" in st.session_state and st.session_state[f"show_detailed_feedback_{i}"]:
-                                                with st.form(key=f"detailed_feedback_form_{i}"):
+                                            feedback_detail_key = f"show_detailed_feedback_{st.session_state.current_session_id}_{i}"
+                                            if feedback_detail_key in st.session_state and st.session_state[feedback_detail_key]:
+                                                with st.form(key=f"detailed_feedback_form_{st.session_state.current_session_id}_{i}"):
                                                     st.write("What could be improved?")
-                                                    detailed_feedback = st.text_area("", key=f"detailed_feedback_{i}", label_visibility="collapsed")
+                                                    detailed_feedback = st.text_area("", key=f"detailed_feedback_{st.session_state.current_session_id}_{i}", label_visibility="collapsed")
                                                     submit_btn = st.form_submit_button("Submit")
                                                     
                                                     if submit_btn and detailed_feedback:
                                                         self.save_message("feedback", f"Comment: {detailed_feedback}", i)
+                                                        # Keep the main feedback status but update the type to include the comment
+                                                        st.session_state[f"feedback_type_{st.session_state.current_session_id}_{i}"] += f" - {detailed_feedback}"
+                                                        # Remove detailed feedback form flag
+                                                        del st.session_state[feedback_detail_key]
                                                         st.success("Thank you for your detailed feedback!")
+                                                        time.sleep(0.5)
+                                                        st.rerun()
                                     else:
-                                        # If feedback was already given, show what was selected
-                                        if f"feedback_type_{i}" in st.session_state:
-                                            st.info(f"You rated this response: {st.session_state[f'feedback_type_{i}']}")
-                                                                    
+                                        # If feedback was already given, just show what was selected with a small info message
+                                        feedback_type_key = f"feedback_type_{st.session_state.current_session_id}_{i}"
+                                        if feedback_type_key in st.session_state:
+                                            displayed_feedback = st.session_state[feedback_type_key]
+                                        else:
+                                            displayed_feedback = feedback_type if feedback_type else "Feedback received"
+                                            
+                                        st.info(f"You rated this response: {displayed_feedback}")
+                                                                                                
             # Process user input - needs to be outside the chat_interface container
             if prompt:
                 # Add user message to chat history

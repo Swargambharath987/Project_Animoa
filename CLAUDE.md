@@ -40,26 +40,30 @@ Project_Animoa/
 ├── .devcontainer/
 │   └── devcontainer.json          # Dev container config for Codespaces/VS Code
 ├── .git/                          # Git repository metadata
+├── archive/                       # 📁 Archived previous versions (v1-v6)
+│   ├── foundation_chatbot.py      # Early prototype (reference only)
+│   ├── v1_main_app.py             # Version 1: Basic chat
+│   ├── v2_main_app.py             # Version 2: Profiles & assessments
+│   ├── v3_main_app.py             # Version 3: Multi-language support
+│   ├── v4_main_app.py             # Version 4: Sessions & feedback
+│   ├── v5_main_app.py             # Version 5: Code refactoring & UI
+│   └── v6_main_app.py             # Version 6: Mood tracking
 ├── main_app_v7.py                 # ⭐ CURRENT PRODUCTION VERSION
-├── main_app_v6.py                 # Previous version
-├── main_app_v5.py                 # Previous version
-├── main_app_v4.py                 # Previous version
-├── main_app_v3.py                 # Previous version
-├── main_app_v2.0.py               # Previous version
-├── main_app.py                    # Original version
-├── foundation_chatbot.py          # Early chatbot prototype
 ├── translations.py                # Multi-language translations (EN, ES, ZH)
 ├── requirements.txt               # Python dependencies
 ├── logo.png                       # Application logo
 ├── README.md                      # User-facing documentation
+├── CLAUDE.md                      # AI assistant guide (this file)
+├── VERSION_HISTORY.md             # Detailed version evolution documentation
 ├── Animoa_Brochure.pdf           # Marketing/project brochure
 └── Capstone_Project_Animoa_12May'25.pptx.pdf  # Project presentation
 ```
 
 ### Version History Notes
-- **main_app_v7.py**: Latest version with full feature set (mood tracking, feedback, PDF generation)
-- Previous versions (v2-v6): Incremental feature additions (keep for reference)
-- **foundation_chatbot.py**: Minimal chatbot prototype using Groq API
+- **main_app_v7.py**: Current production version with full feature set (chat, wellness, mood tracking, analytics, PDF reports)
+- **archive/**: Contains all previous versions (v1-v6) preserved to show development journey
+- **VERSION_HISTORY.md**: Comprehensive documentation of features added in each version
+- **foundation_chatbot.py**: Early minimal prototype (archived)
 
 ---
 
@@ -225,16 +229,22 @@ st.write(t["welcome_message"])
 
 **Translation Keys**: 80+ keys covering all UI elements (buttons, labels, messages)
 
-### foundation_chatbot.py
+### archive/ Directory
 
-**Purpose**: Early chatbot prototype (reference only)
+**Purpose**: Historical versions preserved to show development journey
 
-**Key Differences from main_app_v7.py:**
+**Location**: `archive/` directory contains:
+- `foundation_chatbot.py` - Early chatbot prototype (reference only)
+- `v1_main_app.py` through `v6_main_app.py` - Previous production versions
+
+**Key Differences from main_app_v7.py** (using foundation_chatbot.py as example):
 - No authentication
 - Simpler chat interface
 - No database persistence
 - Uses `qwen-2.5-32b` model (vs `llama-3.3-70b-versatile`)
 - No multi-language support
+
+**For detailed version history**: See `VERSION_HISTORY.md` for comprehensive documentation of features added in each version
 
 ---
 
@@ -622,10 +632,11 @@ This application deals with sensitive mental health data. When working on featur
 
 ### Known Issues & TODOs
 
-1. **Devcontainer Configuration**: Update `.devcontainer/devcontainer.json` line 22 to use `main_app_v7.py`
-2. **Version Cleanup**: Consider archiving old versions (v1-v5) to reduce repository size
+1. ✅ ~~**Devcontainer Configuration**~~: Fixed - now uses `main_app_v7.py`
+2. ✅ ~~**Version Cleanup**~~: Completed - all previous versions moved to `archive/` directory
 3. **Translation Completeness**: Verify all new UI strings have translations in all languages
 4. **PDF Styling**: Enhance `create_wellness_pdf()` with better formatting
+5. **Documentation**: See `VERSION_HISTORY.md` for detailed evolution of features across versions
 
 ### Performance Optimization
 

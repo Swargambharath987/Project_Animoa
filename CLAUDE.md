@@ -186,12 +186,13 @@ The `.devcontainer/devcontainer.json` provides:
 **Primary Sections:**
 1. **Page Configuration** (lines 1-91): Theme, CSS, imports
 2. **Helper Functions** (lines 93-310): API key retrieval, auth UI, profile management
-3. **MentalHealthChatbot Class** (lines 429-1020): Core chat functionality
-4. **Wellness Advisory** (lines 1210-1730): PHQ-2/GAD-2 questionnaires
-5. **Mood Tracker** (lines 1732-2347): Daily mood logging
-6. **Feedback System** (lines 2349-2418): Logout feedback collection
-7. **About Section** (lines 2420-2534): App information
-8. **Main Function** (lines 2536+): Navigation and routing
+3. **Crisis Detection** (lines 428-504): Crisis keyword detection and resource display
+4. **MentalHealthChatbot Class** (lines 506-1100): Core chat functionality with crisis detection integration
+5. **Wellness Advisory** (lines 1290-1810): PHQ-2/GAD-2 questionnaires
+6. **Mood Tracker** (lines 1812-2430): Daily mood logging
+7. **Feedback System** (lines 2432-2500): Logout feedback collection
+8. **About Section** (lines 2502-2620): App information
+9. **Main Function** (lines 2622+): Navigation and routing
 
 **Key Functions:**
 
@@ -200,11 +201,13 @@ The `.devcontainer/devcontainer.json` provides:
 | `get_api_key(key_name)` | Retrieve API keys from .env or secrets | Line 117 |
 | `auth_ui(supabase)` | Login/signup interface | Line 139 |
 | `ensure_profile_exists(user_id, email)` | Create default profile on signup | Line 295 |
-| `profile_manager(supabase)` | User profile CRUD | Line 312 |
-| `generate_recommendations(responses, chat_history)` | AI wellness insights | Line 1587 |
-| `create_wellness_pdf(responses, recommendations)` | PDF generation | Line 1022 |
-| `mood_tracker()` | Mood logging interface | Line 1732 |
-| `show_logout_feedback_form()` | Collect feedback on logout | Line 2349 |
+| `profile_manager(supabase)` | User profile CRUD (age min: 13) | Line 312 |
+| `detect_crisis(message)` | Check for crisis keywords in user messages | Line 489 |
+| `show_crisis_resources(language)` | Display crisis hotlines and resources | Line 498 |
+| `generate_recommendations(responses, chat_history)` | AI wellness insights | Line 1670 |
+| `create_wellness_pdf(responses, recommendations)` | PDF generation | Line 1100 |
+| `mood_tracker()` | Mood logging interface | Line 1812 |
+| `show_logout_feedback_form()` | Collect feedback on logout | Line 2432 |
 
 ### translations.py
 
@@ -626,9 +629,10 @@ Provide recommendations in {language_map[language]}."""
 This application deals with sensitive mental health data. When working on features:
 
 1. **Privacy**: Never log user messages or personal data
-2. **Crisis Detection**: Consider adding crisis keyword detection (suicide, self-harm) with resource links
-3. **Disclaimers**: Maintain clear messaging that Animoa is not a replacement for professional help
-4. **Data Security**: Use Supabase RLS policies to protect user data
+2. **Crisis Detection**: ✅ **IMPLEMENTED** - Detects crisis keywords (suicide, self-harm, etc.) and displays emergency resources (988 hotline, Crisis Text Line) in user's language (EN/ES/ZH)
+3. **Age Requirement**: Minimum age 13 (COPPA compliant, teens are high-need demographic for mental health support)
+4. **Disclaimers**: Maintain clear messaging that Animoa is not a replacement for professional help
+5. **Data Security**: Use Supabase RLS policies to protect user data
 
 ### Known Issues & TODOs
 
@@ -710,5 +714,6 @@ git push origin main
 
 ---
 
-*Last Updated: November 17, 2025*
+*Last Updated: January 21, 2026*
 *Current Version: main_app_v7.py*
+*Recent Changes: Added crisis detection feature with multi-language support (EN/ES/ZH)*

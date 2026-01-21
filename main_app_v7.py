@@ -424,8 +424,85 @@ def profile_manager(supabase):
                 st.rerun()
             except Exception as e:
                 st.error(f"Error updating profile: {str(e)}")
-                
-                              
+
+# ============================================================================
+# CRISIS DETECTION - Critical safety feature for mental health application
+# ============================================================================
+
+# Crisis keywords that indicate potential mental health emergency
+CRISIS_KEYWORDS = [
+    'suicide', 'suicidal', 'kill myself', 'end my life', 'want to die',
+    'don\'t want to live', 'no reason to live', 'better off dead',
+    'self-harm', 'self harm', 'hurt myself', 'cutting myself',
+    'overdose', 'end it all', 'take my life', 'not worth living'
+]
+
+# Crisis resources by language
+CRISIS_RESOURCES = {
+    'en': {
+        'title': '🆘 Crisis Support Resources',
+        'message': """**If you're experiencing a mental health crisis, please reach out for help:**
+
+• **988 Suicide & Crisis Lifeline** - Call or text **988** (Available 24/7)
+• **Crisis Text Line** - Text **HOME** to **741741**
+• **International Association for Suicide Prevention** - https://www.iasp.info/resources/Crisis_Centres/
+• **Emergency Services** - Call **911** if you're in immediate danger
+
+**You are not alone. Professional help is available right now.**
+
+Animoa cares about your wellbeing, but I'm an AI companion and not a substitute for professional mental health care. Please reach out to the resources above if you're in crisis.""",
+    },
+    'es': {
+        'title': '🆘 Recursos de Apoyo en Crisis',
+        'message': """**Si estás experimentando una crisis de salud mental, por favor busca ayuda:**
+
+• **Línea Nacional de Prevención del Suicidio** - Llama al **988** (Disponible 24/7, en español)
+• **Línea de Crisis por Texto** - Envía **HOLA** al **741741**
+• **Teléfono de la Esperanza (España)** - **717 003 717**
+• **Servicios de Emergencia** - Llama al **911** si estás en peligro inmediato
+
+**No estás solo/a. La ayuda profesional está disponible ahora mismo.**
+
+Animoa se preocupa por tu bienestar, pero soy un compañero de IA y no un sustituto de la atención profesional de salud mental.""",
+    },
+    'zh': {
+        'title': '🆘 危机支援资源',
+        'message': """**如果您正在经历心理健康危机，请寻求帮助：**
+
+• **全国心理援助热线** - **400-161-9995**
+• **北京心理危机研究与干预中心** - **010-82951332**
+• **生命热线（台湾）** - **1925**
+• **撒玛利亚防止自杀会（香港）** - **2389 2222**
+• **紧急服务** - 如果您处于紧急危险中，请拨打 **120** 或 **110**
+
+**您并不孤单。专业帮助现在就可以获得。**
+
+Animoa关心您的健康，但我是一个AI伙伴，不能替代专业的心理健康护理。""",
+    }
+}
+
+def detect_crisis(message):
+    """
+    Detect if a message contains crisis-related keywords.
+    Returns True if crisis keywords are detected.
+    """
+    if not message:
+        return False
+    message_lower = message.lower()
+    for keyword in CRISIS_KEYWORDS:
+        if keyword in message_lower:
+            return True
+    return False
+
+def show_crisis_resources(language='en'):
+    """
+    Display crisis resources in the user's preferred language.
+    """
+    resources = CRISIS_RESOURCES.get(language, CRISIS_RESOURCES['en'])
+    st.error(resources['title'])
+    st.warning(resources['message'])
+
+
 class MentalHealthChatbot:
     def __init__(self):
         # Initialize Groq client
@@ -957,19 +1034,25 @@ class MentalHealthChatbot:
                                                                                                 
             # Process user input - needs to be outside the chat_interface container
             if prompt:
+                # CRISIS DETECTION - Check for crisis keywords before processing
+                if detect_crisis(prompt):
+                    # Show crisis resources immediately
+                    current_lang = st.session_state.get('language', 'en')
+                    show_crisis_resources(current_lang)
+
                 # Add user message to chat history
                 st.session_state.messages.append({"role": "user", "content": prompt})
                 self.save_message("user", prompt)
-                
+
                 # Prepare conversation history
                 conversation_history = self.prepare_conversation_history()
-                
+
                 # Generate and display bot response
                 with st.spinner("Thinking..."):
                     response = self.generate_response(prompt, conversation_history)
                     st.session_state.messages.append({"role": "assistant", "content": response})
                     self.save_message("assistant", response)
-                
+
                 # Force a rerun to update the UI with new messages
                 st.rerun()
                 

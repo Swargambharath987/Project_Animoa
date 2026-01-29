@@ -213,13 +213,13 @@ animoa-next/
 - [x] Add message persistence
 - [x] Implement feedback system
 
-### Phase 3: Assessment & Mood (Week 3)
-- [ ] Build questionnaire form component
-- [ ] Create recommendations API route
-- [ ] Implement assessment history
-- [ ] Build mood tracker UI
-- [ ] Create mood calendar visualization
-- [ ] Add mood trends chart
+### Phase 3: Assessment & Mood (Week 3) - COMPLETED
+- [x] Build questionnaire form component
+- [x] Create recommendations API route
+- [x] Implement assessment history
+- [x] Build mood tracker UI
+- [x] Create mood calendar visualization
+- [x] Add mood trends chart
 
 ### Phase 4: Polish & PDF (Week 4)
 - [ ] Implement PDF generation (jsPDF or react-pdf)
@@ -261,27 +261,27 @@ animoa-next/
 - [x] Crisis resources display (English)
 
 ### Assessment
-- [ ] PHQ-2 questions (mood, interest)
-- [ ] GAD-2 questions (anxiety, worry)
-- [ ] Sleep quality question
-- [ ] Social support question
-- [ ] Coping strategies textarea
-- [ ] Form validation
-- [ ] AI recommendation generation
-- [ ] Recommendation display
+- [x] PHQ-2 questions (mood, interest)
+- [x] GAD-2 questions (anxiety, worry)
+- [x] Sleep quality question
+- [x] Social support question
+- [x] Coping strategies textarea
+- [x] Form validation
+- [x] AI recommendation generation
+- [x] Recommendation display
 - [ ] PDF download
-- [ ] Assessment history list
-- [ ] View past assessment
-- [ ] Delete assessment
+- [x] Assessment history list
+- [x] View past assessment
+- [x] Delete assessment
 
 ### Mood Tracker
-- [ ] 5-level mood picker (emoji buttons)
-- [ ] Journal note textarea
-- [ ] Save mood entry
-- [ ] Edit today's mood
-- [ ] Calendar view (week/month)
-- [ ] Trend line chart
-- [ ] Pattern insights
+- [x] 5-level mood picker (emoji buttons)
+- [x] Journal note textarea
+- [x] Save mood entry
+- [x] Edit today's mood
+- [x] Calendar view (week/month)
+- [x] Trend line chart
+- [x] Pattern insights
 
 ### PDF Generation
 - [ ] Wellness report header

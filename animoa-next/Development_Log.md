@@ -283,14 +283,170 @@ animoa-next/
 
 ---
 
-## Next Steps (Phase 3)
+## Session 4 - January 28, 2026
 
-- [ ] Build questionnaire form component (PHQ-2, GAD-2)
-- [ ] Create recommendations API route
-- [ ] Implement assessment history
-- [ ] Build mood tracker UI (5-level mood picker)
-- [ ] Create mood calendar visualization
-- [ ] Add mood trends chart
+### Phase 3: Assessment & Mood Tracker - COMPLETED
+
+#### Step 3.1 - Assessment API Routes
+- GET /api/assessment - List all assessments for current user
+- POST /api/assessment - Submit questionnaire and generate AI recommendations
+- GET /api/assessment/[id] - Get specific assessment details
+- DELETE /api/assessment/[id] - Delete an assessment
+- AI-powered recommendations using Groq with personalized prompts
+- Optional chat history context for enhanced recommendations
+
+**Files Created**:
+- `app/api/assessment/route.ts` - Assessment list and create endpoints
+- `app/api/assessment/[id]/route.ts` - Assessment get and delete endpoints
+
+#### Step 3.2 - Assessment UI Components
+- **QuestionnaireForm**: Complete PHQ-2 + GAD-2 questionnaire with validation
+  - PHQ-2: Depression screening (mood, interest)
+  - GAD-2: Anxiety screening (nervousness, worry control)
+  - Additional factors: Sleep quality, social support, coping strategies
+  - Option to include chat history for context
+- **AssessmentHistory**: List view with PHQ-2/GAD-2 score summaries
+- **AssessmentDetail**: Full assessment view with recommendations
+
+**Files Created**:
+- `components/assessment/QuestionnaireForm.tsx` - Multi-section questionnaire
+- `components/assessment/AssessmentHistory.tsx` - Assessment list with scores
+- `components/assessment/AssessmentDetail.tsx` - Detailed view with recommendations
+
+#### Step 3.3 - Assessment Page
+- Tab navigation (New Assessment / History)
+- Form submission with loading states
+- View and delete past assessments
+- Personalized AI recommendations display
+
+**Files Modified**:
+- `app/(dashboard)/assessment/page.tsx` - Full assessment page implementation
+
+#### Step 3.4 - Mood API Routes
+- GET /api/mood - Get mood entries for date range
+- POST /api/mood - Create or update mood entry (upsert by date)
+- DELETE /api/mood/[id] - Delete mood entry
+- Validates mood types (very_happy, happy, neutral, sad, very_sad)
+
+**Files Created**:
+- `app/api/mood/route.ts` - Mood list and create/update endpoints
+- `app/api/mood/[id]/route.ts` - Mood delete endpoint
+
+#### Step 3.5 - Mood UI Components
+- **MoodPicker**: 5-level emoji selector with journal notes
+  - Emoji buttons: 😄 Great, 🙂 Good, 😐 Okay, 😔 Low, 😢 Struggling
+  - Contextual mood messages
+  - Journal note textarea
+- **MoodCalendar**: Interactive monthly calendar view
+  - Navigate between months
+  - Click dates to log/edit moods
+  - Visual emoji display for logged days
+  - Mood legend
+- **MoodChart**: SVG-based trend visualization
+  - 7/14/30 day time range selector
+  - Line chart with gradient fill
+  - Stats: days logged, average mood, most frequent mood
+
+**Files Created**:
+- `components/mood/MoodPicker.tsx` - Mood selection with MOOD_CONFIG export
+- `components/mood/MoodCalendar.tsx` - Interactive calendar component
+- `components/mood/MoodChart.tsx` - SVG trend chart with stats
+
+#### Step 3.6 - Mood Tracker Page
+- Two-column responsive layout
+- Today's mood logging section
+- Edit past moods via calendar click
+- Real-time chart updates
+- Recent activity feed
+
+**Files Modified**:
+- `app/(dashboard)/mood/page.tsx` - Full mood tracker implementation
+
+---
+
+## Updated Directory Structure
+
+```
+animoa-next/
+├── app/
+│   ├── (auth)/
+│   │   ├── login/page.tsx
+│   │   └── signup/page.tsx
+│   ├── (dashboard)/
+│   │   ├── assessment/page.tsx         # Full assessment UI
+│   │   ├── chat/
+│   │   │   ├── layout.tsx
+│   │   │   ├── page.tsx
+│   │   │   └── [sessionId]/page.tsx
+│   │   ├── layout.tsx
+│   │   ├── mood/page.tsx               # Full mood tracker UI
+│   │   └── profile/page.tsx
+│   ├── api/
+│   │   ├── assessment/
+│   │   │   ├── route.ts                # Assessment list/create
+│   │   │   └── [id]/route.ts           # Assessment get/delete
+│   │   ├── chat/route.ts
+│   │   ├── feedback/route.ts
+│   │   ├── mood/
+│   │   │   ├── route.ts                # Mood list/create
+│   │   │   └── [id]/route.ts           # Mood delete
+│   │   └── sessions/
+│   │       ├── route.ts
+│   │       └── [sessionId]/
+│   │           ├── route.ts
+│   │           └── messages/route.ts
+│   ├── globals.css
+│   ├── layout.tsx
+│   └── page.tsx
+├── components/
+│   ├── assessment/
+│   │   ├── AssessmentDetail.tsx
+│   │   ├── AssessmentHistory.tsx
+│   │   └── QuestionnaireForm.tsx
+│   ├── chat/
+│   │   ├── ChatInput.tsx
+│   │   ├── FeedbackButtons.tsx
+│   │   ├── MessageBubble.tsx
+│   │   └── SessionList.tsx
+│   ├── common/
+│   │   └── Sidebar.tsx
+│   ├── crisis/
+│   │   └── CrisisAlert.tsx
+│   └── mood/
+│       ├── MoodCalendar.tsx
+│       ├── MoodChart.tsx
+│       └── MoodPicker.tsx
+├── lib/
+│   ├── supabase/
+│   │   ├── client.ts
+│   │   └── server.ts
+│   ├── crisis-detection.ts
+│   ├── groq.ts
+│   └── utils.ts
+├── types/
+│   └── index.ts
+├── .env.example
+├── .gitignore
+├── Development_Log.md
+├── MIGRATION_PLAN.md
+├── middleware.ts
+├── next.config.js
+├── package.json
+├── postcss.config.js
+├── tailwind.config.ts
+└── tsconfig.json
+```
+
+---
+
+## Next Steps (Phase 4)
+
+- [ ] Implement PDF generation (jsPDF or react-pdf)
+- [ ] User profile management page
+- [ ] Error handling and loading states polish
+- [ ] Mobile responsiveness improvements
+- [ ] Performance optimization
+- [ ] Final testing and bug fixes
 
 ---
 
@@ -315,4 +471,4 @@ GROQ_API_KEY=
 
 ---
 
-*Last Updated: January 28, 2026*
+*Last Updated: January 28, 2026 (Phase 3 Completed)*

@@ -28,7 +28,7 @@ export default function Sidebar({ userEmail }: SidebarProps) {
   }
 
   return (
-    <aside className="w-64 bg-white border-r border-gray-200 flex flex-col">
+    <aside className="w-64 bg-white border-r border-gray-200 flex flex-col shrink-0">
       {/* Logo */}
       <div className="p-4 border-b border-gray-200">
         <Link href="/chat" className="flex items-center gap-2">

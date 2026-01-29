@@ -5,30 +5,40 @@ import type { Message } from '@/types'
 
 export async function POST(request: NextRequest) {
   try {
-    const { message, conversationHistory } = await request.json()
+    const { message, sessionId, conversationHistory } = await request.json()
 
     if (!message) {
       return NextResponse.json({ error: 'Message is required' }, { status: 400 })
     }
 
-    // Get user profile for personalization
+    // Get user and profile for personalization
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
 
-    let profile = null
-    if (user) {
-      const { data } = await supabase
-        .table('profiles')
-        .select('full_name, stress_level, goals, interests')
-        .eq('id', user.id)
-        .single()
-      profile = data
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Create Groq client and generate response
-    const groq = createGroqClient()
+    let profile = null
+    const { data } = await supabase
+      .from('profiles')
+      .select('full_name, stress_level, goals, interests')
+      .eq('id', user.id)
+      .single()
+    profile = data
 
-    const messages = [
+    // Save user message to Supabase
+    if (sessionId) {
+      await supabase.from('chat_history').insert({
+        user_id: user.id,
+        session_id: sessionId,
+        message,
+        sender: 'user',
+      })
+    }
+
+    // Build messages array for Groq
+    const groqMessages = [
       { role: 'system' as const, content: getSystemPrompt(profile) },
       ...((conversationHistory || []) as Message[]).map((msg: Message) => ({
         role: msg.role as 'user' | 'assistant',
@@ -37,15 +47,79 @@ export async function POST(request: NextRequest) {
       { role: 'user' as const, content: message },
     ]
 
-    const completion = await groq.chat.completions.create({
+    // Create Groq client with streaming
+    const groq = createGroqClient()
+
+    const stream = await groq.chat.completions.create({
       model: GROQ_MODEL,
-      messages,
+      messages: groqMessages,
       temperature: 0.7,
+      max_tokens: 500,
+      stream: true,
     })
 
-    const response = completion.choices[0]?.message?.content || 'I apologize, I could not generate a response.'
+    // Create a ReadableStream that sends chunks to the client
+    const encoder = new TextEncoder()
+    let fullResponse = ''
 
-    return NextResponse.json({ response })
+    const readable = new ReadableStream({
+      async start(controller) {
+        try {
+          for await (const chunk of stream) {
+            const content = chunk.choices[0]?.delta?.content || ''
+            if (content) {
+              fullResponse += content
+              controller.enqueue(encoder.encode(`data: ${JSON.stringify({ content })}\n\n`))
+            }
+          }
+
+          // Save the complete bot response to Supabase
+          if (sessionId && fullResponse) {
+            await supabase.from('chat_history').insert({
+              user_id: user.id,
+              session_id: sessionId,
+              message: fullResponse,
+              sender: 'bot',
+            })
+
+            // Auto-update session title from first user message
+            const { data: messages } = await supabase
+              .from('chat_history')
+              .select('id')
+              .eq('session_id', sessionId)
+              .eq('sender', 'user')
+
+            if (messages && messages.length === 1) {
+              // This is the first message - update session title
+              const title = message.length > 40
+                ? message.substring(0, 40) + '...'
+                : message
+              await supabase
+                .from('chat_sessions')
+                .update({ title })
+                .eq('id', sessionId)
+            }
+          }
+
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify({ done: true })}\n\n`))
+          controller.close()
+        } catch (error) {
+          console.error('Streaming error:', error)
+          controller.enqueue(
+            encoder.encode(`data: ${JSON.stringify({ error: 'Streaming failed' })}\n\n`)
+          )
+          controller.close()
+        }
+      },
+    })
+
+    return new Response(readable, {
+      headers: {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive',
+      },
+    })
   } catch (error) {
     console.error('Chat API error:', error)
     return NextResponse.json(

@@ -146,13 +146,151 @@ animoa-next/
 
 ---
 
-## Next Steps (Phase 2)
+## Session 3 - January 28, 2026
 
-- [ ] Add chat session persistence (Supabase)
-- [ ] Implement message history loading
-- [ ] Add feedback buttons
-- [ ] Create new chat functionality
-- [ ] Session switching
+### Branch Reorganization
+- Renamed `main` branch to `first-mvp` (preserving original Streamlit MVP)
+- Promoted `claude` branch to new `main` (Next.js migration code)
+- Set `main` as default branch on GitHub
+- Cleaned up old remote claude branch
+
+### Phase 2: Core Chat - COMPLETED
+
+#### Step 2.1 - Chat Session API Routes
+- GET /api/sessions - List all chat sessions for current user
+- POST /api/sessions - Create a new chat session
+- DELETE /api/sessions/[sessionId] - Delete session and its messages
+- PATCH /api/sessions/[sessionId] - Update session title
+
+**Files Created**:
+- `app/api/sessions/route.ts` - Session list and create endpoints
+- `app/api/sessions/[sessionId]/route.ts` - Session delete and update endpoints
+
+#### Step 2.2 - Message Persistence API
+- GET /api/sessions/[sessionId]/messages - Load messages for a session
+- POST /api/sessions/[sessionId]/messages - Save a message to a session
+- Messages stored in Supabase `chat_history` table
+
+**Files Created**:
+- `app/api/sessions/[sessionId]/messages/route.ts` - Messages CRUD
+
+#### Step 2.3 - Streaming Chat API
+- Upgraded chat API route to use Server-Sent Events (SSE) streaming
+- Groq responses now stream character-by-character to the client
+- User and bot messages automatically persisted to Supabase
+- Auto-generates session title from first user message
+- Fixed `.table()` → `.from()` (Supabase JS v2 API)
+
+**Files Modified**:
+- `app/api/chat/route.ts` - Complete rewrite with streaming + persistence
+
+#### Step 2.4 - Feedback System
+- POST /api/feedback - Save/update emoji feedback for bot messages
+- Supports 4 emoji reactions: 👍 (Helpful), ❤️ (Love it), 🤔 (Made me think), 👎 (Not helpful)
+- Feedback stored as `chat_history` entries with `sender='feedback'`
+- Upsert logic: updates existing feedback or creates new entry
+
+**Files Created**:
+- `app/api/feedback/route.ts` - Feedback endpoint
+
+#### Step 2.5 - Chat UI Components
+- **SessionList**: Displays conversation list with create/delete functionality
+- **MessageBubble**: Renders user/assistant messages with proper styling
+- **ChatInput**: Textarea with auto-resize, Shift+Enter for newlines
+- **FeedbackButtons**: Emoji reaction buttons on assistant messages (show on hover)
+
+**Files Created**:
+- `components/chat/SessionList.tsx` - Session list sidebar component
+- `components/chat/MessageBubble.tsx` - Message display with feedback integration
+- `components/chat/ChatInput.tsx` - Smart chat input with auto-resize
+- `components/chat/FeedbackButtons.tsx` - Emoji feedback buttons
+
+#### Step 2.6 - Chat Session Management Pages
+- Chat layout with sessions sidebar panel + chat content area
+- Welcome page for when no session is selected
+- Session-specific chat page with full message history, streaming, and feedback
+- URL-based routing: `/chat` (welcome) and `/chat/[sessionId]` (active chat)
+
+**Files Created**:
+- `app/(dashboard)/chat/layout.tsx` - Chat layout with sessions panel
+- `app/(dashboard)/chat/[sessionId]/page.tsx` - Active chat session page
+
+**Files Modified**:
+- `app/(dashboard)/chat/page.tsx` - Rewritten as welcome/new chat page
+- `app/(dashboard)/layout.tsx` - Fixed height cascading (h-screen + overflow-hidden)
+- `components/common/Sidebar.tsx` - Added shrink-0 for layout stability
+
+---
+
+## Updated Directory Structure
+
+```
+animoa-next/
+├── app/
+│   ├── (auth)/
+│   │   ├── login/page.tsx
+│   │   └── signup/page.tsx
+│   ├── (dashboard)/
+│   │   ├── assessment/page.tsx
+│   │   ├── chat/
+│   │   │   ├── layout.tsx              # Chat layout with sessions panel
+│   │   │   ├── page.tsx                # Welcome / new chat page
+│   │   │   └── [sessionId]/page.tsx    # Active chat session
+│   │   ├── layout.tsx
+│   │   ├── mood/page.tsx
+│   │   └── profile/page.tsx
+│   ├── api/
+│   │   ├── chat/route.ts              # Streaming chat with Groq
+│   │   ├── feedback/route.ts          # Feedback emoji endpoint
+│   │   └── sessions/
+│   │       ├── route.ts               # Session list/create
+│   │       └── [sessionId]/
+│   │           ├── route.ts           # Session delete/update
+│   │           └── messages/route.ts  # Messages CRUD
+│   ├── globals.css
+│   ├── layout.tsx
+│   └── page.tsx
+├── components/
+│   ├── chat/
+│   │   ├── ChatInput.tsx
+│   │   ├── FeedbackButtons.tsx
+│   │   ├── MessageBubble.tsx
+│   │   └── SessionList.tsx
+│   ├── common/
+│   │   └── Sidebar.tsx
+│   └── crisis/
+│       └── CrisisAlert.tsx
+├── lib/
+│   ├── supabase/
+│   │   ├── client.ts
+│   │   └── server.ts
+│   ├── crisis-detection.ts
+│   ├── groq.ts
+│   └── utils.ts
+├── types/
+│   └── index.ts
+├── .env.example
+├── .gitignore
+├── Development_Log.md
+├── MIGRATION_PLAN.md
+├── middleware.ts
+├── next.config.js
+├── package.json
+├── postcss.config.js
+├── tailwind.config.ts
+└── tsconfig.json
+```
+
+---
+
+## Next Steps (Phase 3)
+
+- [ ] Build questionnaire form component (PHQ-2, GAD-2)
+- [ ] Create recommendations API route
+- [ ] Implement assessment history
+- [ ] Build mood tracker UI (5-level mood picker)
+- [ ] Create mood calendar visualization
+- [ ] Add mood trends chart
 
 ---
 
@@ -177,4 +315,4 @@ GROQ_API_KEY=
 
 ---
 
-*Last Updated: January 21, 2026*
+*Last Updated: January 28, 2026*

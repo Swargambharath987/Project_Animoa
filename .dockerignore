@@ -1,0 +1,25 @@
+# Next.js migration (separate project)
+animoa-next/
+
+# Archived versions
+archive/
+
+# Git
+.git/
+.gitignore
+
+# Documentation
+*.md
+*.pdf
+
+# Dev container
+.devcontainer/
+
+# Environment files (passed at runtime)
+.env
+.env.*
+
+# OS files
+.DS_Store
+__pycache__/
+*.pyc

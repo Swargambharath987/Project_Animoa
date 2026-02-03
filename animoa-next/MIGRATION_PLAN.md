@@ -203,7 +203,7 @@ animoa-next/
 - [x] Set up environment variables
 - [x] Create basic layout and routing structure
 - [x] Implement authentication (login/signup)
-- [ ] Deploy skeleton to Vercel
+- [x] Deploy skeleton to Vercel
 
 ### Phase 2: Core Chat (Week 2) - COMPLETED
 - [x] Create chat UI components
@@ -236,7 +236,7 @@ animoa-next/
 ### Authentication
 - [x] Login form with email/password
 - [x] Signup form with password confirmation
-- [ ] Forgot password flow
+- [x] Forgot password flow
 - [x] Protected routes middleware
 - [x] Session persistence
 

@@ -5,6 +5,7 @@ import QuestionnaireForm from '@/components/assessment/QuestionnaireForm'
 import AssessmentHistory from '@/components/assessment/AssessmentHistory'
 import AssessmentDetail from '@/components/assessment/AssessmentDetail'
 import Toast from '@/components/common/Toast'
+import { AssessmentHistorySkeleton } from '@/components/common/Skeleton'
 import type { Assessment, AssessmentResponses } from '@/types'
 
 type Tab = 'new' | 'history'
@@ -153,9 +154,7 @@ export default function AssessmentPage() {
       {activeTab === 'new' ? (
         <QuestionnaireForm onSubmit={handleSubmit} isSubmitting={isSubmitting} />
       ) : isLoading ? (
-        <div className="flex items-center justify-center py-12">
-          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-        </div>
+        <AssessmentHistorySkeleton />
       ) : (
         <AssessmentHistory
           assessments={assessments}

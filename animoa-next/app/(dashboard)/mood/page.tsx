@@ -5,6 +5,7 @@ import MoodPicker from '@/components/mood/MoodPicker'
 import MoodCalendar from '@/components/mood/MoodCalendar'
 import MoodChart from '@/components/mood/MoodChart'
 import Toast from '@/components/common/Toast'
+import { MoodCalendarSkeleton } from '@/components/common/Skeleton'
 import { MOOD_CONFIG } from '@/components/mood/MoodPicker'
 import type { MoodEntry, MoodType } from '@/types'
 
@@ -86,8 +87,25 @@ export default function MoodPage() {
 
   if (isLoading) {
     return (
-      <div className="p-6 flex items-center justify-center min-h-[400px]">
-        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+      <div className="p-6 max-w-6xl mx-auto">
+        <div className="mb-6">
+          <div className="h-8 w-40 bg-gray-200 rounded animate-pulse mb-2" />
+          <div className="h-4 w-72 bg-gray-200 rounded animate-pulse" />
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="space-y-6">
+            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+              <div className="h-6 w-48 bg-gray-200 rounded animate-pulse mb-6" />
+              <div className="flex justify-center gap-3 mb-6">
+                {[...Array(5)].map((_, i) => (
+                  <div key={i} className="w-16 h-20 bg-gray-200 rounded-xl animate-pulse" />
+                ))}
+              </div>
+              <div className="h-24 bg-gray-200 rounded-lg animate-pulse" />
+            </div>
+          </div>
+          <MoodCalendarSkeleton />
+        </div>
       </div>
     )
   }

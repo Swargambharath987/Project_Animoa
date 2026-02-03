@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { ProfileSkeleton } from '@/components/common/Skeleton'
 import type { Profile } from '@/types'
 
 const stressLevelOptions = ['Low', 'Moderate', 'High', 'Very High'] as const
@@ -87,8 +88,12 @@ export default function ProfilePage() {
 
   if (isLoading) {
     return (
-      <div className="p-6 flex items-center justify-center min-h-[400px]">
-        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+      <div className="p-6 max-w-2xl mx-auto">
+        <div className="mb-6">
+          <div className="h-8 w-40 bg-gray-200 rounded animate-pulse mb-2" />
+          <div className="h-4 w-72 bg-gray-200 rounded animate-pulse" />
+        </div>
+        <ProfileSkeleton />
       </div>
     )
   }

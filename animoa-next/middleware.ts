@@ -66,8 +66,8 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
-  // Redirect logged-in users away from auth pages
-  const authPaths = ['/login', '/signup']
+  // Redirect logged-in users away from auth pages (except reset-password which needs a session)
+  const authPaths = ['/login', '/signup', '/forgot-password']
   const isAuthPath = authPaths.some(path =>
     request.nextUrl.pathname.startsWith(path)
   )

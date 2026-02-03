@@ -580,13 +580,148 @@ animoa-next/
 
 ---
 
-## Next Steps (Phase 5 - Future)
+## Session 6 - February 2, 2026
 
-- [ ] Deploy to Vercel
+### Phase 5: Deployment Readiness & Final Features - COMPLETED
+
+#### Step 5.1 - Forgot Password Flow
+- Forgot password page with email input and Supabase resetPasswordForEmail
+- Email sent confirmation screen with retry option
+- Reset password page for setting new password after email link click
+- Password validation (min 6 chars, confirmation match)
+- Auto-redirect to /chat after successful password reset
+- "Forgot your password?" link added to login page
+
+**Files Created**:
+- `app/(auth)/forgot-password/page.tsx` - Request reset email page
+- `app/(auth)/reset-password/page.tsx` - Set new password page
+
+**Files Modified**:
+- `app/(auth)/login/page.tsx` - Added forgot password link
+
+#### Step 5.2 - Auth Callback & Vercel Config
+- Auth callback route handles Supabase email confirmation and password reset redirects
+- Exchanges auth code for session, redirects to target page
+- Vercel deployment config with region and build settings
+- Updated middleware to allow forgot-password route for unauthenticated users
+
+**Files Created**:
+- `app/auth/callback/route.ts` - Supabase auth redirect handler
+- `vercel.json` - Vercel deployment configuration
+
+**Files Modified**:
+- `middleware.ts` - Added forgot-password to auth paths
+
+#### Step 5.3 - Loading Skeletons & UX Polish
+- Reusable Skeleton component with shimmer animation
+- Pre-built skeleton layouts: SessionList, AssessmentHistory, MoodCalendar, Profile
+- Replaced all spinner-only loading states with content-aware skeletons
+- Chat sessions sidebar hidden on mobile to avoid overlap with main sidebar
+- Consistent loading experience across all pages
+
+**Files Created**:
+- `components/common/Skeleton.tsx` - Skeleton primitives and page layouts
+
+**Files Modified**:
+- `app/(dashboard)/chat/layout.tsx` - Session list skeleton, mobile hidden
+- `app/(dashboard)/profile/page.tsx` - Profile skeleton loading
+- `app/(dashboard)/assessment/page.tsx` - Assessment history skeleton
+- `app/(dashboard)/mood/page.tsx` - Mood page skeleton with calendar
+
+---
+
+## Updated Directory Structure
+
+```
+animoa-next/
+├── app/
+│   ├── (auth)/
+│   │   ├── forgot-password/page.tsx    # Request password reset
+│   │   ├── login/page.tsx
+│   │   ├── reset-password/page.tsx     # Set new password
+│   │   └── signup/page.tsx
+│   ├── (dashboard)/
+│   │   ├── assessment/page.tsx
+│   │   ├── chat/
+│   │   │   ├── layout.tsx
+│   │   │   ├── page.tsx
+│   │   │   └── [sessionId]/page.tsx
+│   │   ├── layout.tsx
+│   │   ├── mood/page.tsx
+│   │   └── profile/page.tsx
+│   ├── api/
+│   │   ├── assessment/
+│   │   │   ├── route.ts
+│   │   │   └── [id]/route.ts
+│   │   ├── chat/route.ts
+│   │   ├── feedback/route.ts
+│   │   ├── mood/
+│   │   │   ├── route.ts
+│   │   │   └── [id]/route.ts
+│   │   ├── pdf/route.ts
+│   │   ├── profile/route.ts
+│   │   └── sessions/
+│   │       ├── route.ts
+│   │       └── [sessionId]/
+│   │           ├── route.ts
+│   │           └── messages/route.ts
+│   ├── auth/
+│   │   └── callback/route.ts           # Supabase auth redirect handler
+│   ├── globals.css
+│   ├── layout.tsx
+│   └── page.tsx
+├── components/
+│   ├── assessment/
+│   │   ├── AssessmentDetail.tsx
+│   │   ├── AssessmentHistory.tsx
+│   │   └── QuestionnaireForm.tsx
+│   ├── chat/
+│   │   ├── ChatInput.tsx
+│   │   ├── FeedbackButtons.tsx
+│   │   ├── MessageBubble.tsx
+│   │   └── SessionList.tsx
+│   ├── common/
+│   │   ├── Sidebar.tsx
+│   │   ├── Skeleton.tsx                # Loading skeletons
+│   │   └── Toast.tsx
+│   ├── crisis/
+│   │   └── CrisisAlert.tsx
+│   └── mood/
+│       ├── MoodCalendar.tsx
+│       ├── MoodChart.tsx
+│       └── MoodPicker.tsx
+├── lib/
+│   ├── supabase/
+│   │   ├── client.ts
+│   │   └── server.ts
+│   ├── crisis-detection.ts
+│   ├── groq.ts
+│   └── utils.ts
+├── types/
+│   └── index.ts
+├── .env.example
+├── .gitignore
+├── Development_Log.md
+├── MIGRATION_PLAN.md
+├── middleware.ts
+├── next.config.js
+├── package.json
+├── postcss.config.js
+├── tailwind.config.ts
+├── tsconfig.json
+└── vercel.json                         # Vercel deployment config
+```
+
+---
+
+## Next Steps (Future Enhancements)
+
+- [ ] Deploy to Vercel and configure environment variables
+- [ ] Configure Supabase redirect URLs for production domain
 - [ ] End-to-end testing
-- [ ] Performance optimization (React Query / caching)
 - [ ] Enhanced personalization (conversation pattern analysis)
 - [ ] MCP server integration exploration
+- [ ] React Native mobile app (shared component patterns)
 
 ---
 
@@ -611,4 +746,4 @@ GROQ_API_KEY=
 
 ---
 
-*Last Updated: February 2, 2026 (Phase 4 Completed)*
+*Last Updated: February 2, 2026 (Phase 5 Completed)*

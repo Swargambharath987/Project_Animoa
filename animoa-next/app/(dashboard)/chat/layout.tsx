@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { usePathname } from 'next/navigation'
 import SessionList from '@/components/chat/SessionList'
+import { SessionListSkeleton } from '@/components/common/Skeleton'
 import type { ChatSession } from '@/types'
 
 export default function ChatLayout({
@@ -41,15 +42,13 @@ export default function ChatLayout({
 
   return (
     <div className="flex h-full">
-      {/* Sessions Sidebar */}
-      <div className="w-64 bg-gray-50 border-r border-gray-200 flex flex-col pt-4 shrink-0">
+      {/* Sessions Sidebar - hidden on mobile */}
+      <div className="hidden md:flex w-64 bg-gray-50 border-r border-gray-200 flex-col pt-4 shrink-0">
         <h2 className="px-4 pb-3 text-sm font-semibold text-gray-500 uppercase tracking-wider">
           Conversations
         </h2>
         {loading ? (
-          <div className="flex items-center justify-center py-8">
-            <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-          </div>
+          <SessionListSkeleton />
         ) : (
           <SessionList
             sessions={sessions}

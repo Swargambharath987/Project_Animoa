@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import MoodPicker from '@/components/mood/MoodPicker'
 import MoodCalendar from '@/components/mood/MoodCalendar'
 import MoodChart from '@/components/mood/MoodChart'
+import Toast from '@/components/common/Toast'
 import { MOOD_CONFIG } from '@/components/mood/MoodPicker'
 import type { MoodEntry, MoodType } from '@/types'
 
@@ -13,6 +14,7 @@ export default function MoodPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
   const [selectedEntry, setSelectedEntry] = useState<MoodEntry | null>(null)
+  const [toast, setToast] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
 
   const today = new Date().toISOString().split('T')[0]
   const todayEntry = moods.find((m) => m.date === today)
@@ -55,9 +57,13 @@ export default function MoodPage() {
         await fetchMoods()
         setSelectedDate(null)
         setSelectedEntry(null)
+        setToast({ type: 'success', text: 'Mood saved!' })
+      } else {
+        setToast({ type: 'error', text: 'Failed to save mood. Please try again.' })
       }
     } catch (error) {
       console.error('Failed to save mood:', error)
+      setToast({ type: 'error', text: 'Something went wrong. Please try again.' })
     } finally {
       setIsSubmitting(false)
     }
@@ -87,7 +93,8 @@ export default function MoodPage() {
   }
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
+    <div className="p-6 max-w-6xl mx-auto overflow-y-auto h-full">
+      {toast && <Toast message={toast.text} type={toast.type} onClose={() => setToast(null)} />}
       <div className="mb-6">
         <h1 className="text-2xl font-semibold text-secondary mb-2">Mood Tracker</h1>
         <p className="text-gray-500">

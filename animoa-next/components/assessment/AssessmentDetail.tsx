@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import { formatDateTime } from '@/lib/utils'
 import type { Assessment } from '@/types'
 
@@ -49,7 +50,35 @@ const responseLabels: Record<string, Record<string, string>> = {
 }
 
 export default function AssessmentDetail({ assessment, onBack }: AssessmentDetailProps) {
+  const [isDownloading, setIsDownloading] = useState(false)
   const { responses, recommendations, created_at, used_chat_history } = assessment
+
+  const handleDownloadPDF = async () => {
+    setIsDownloading(true)
+    try {
+      const response = await fetch('/api/pdf', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ assessmentId: assessment.id }),
+      })
+
+      if (response.ok) {
+        const blob = await response.blob()
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = `animoa-wellness-report-${assessment.id.slice(0, 8)}.pdf`
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+        URL.revokeObjectURL(url)
+      }
+    } catch (error) {
+      console.error('PDF download error:', error)
+    } finally {
+      setIsDownloading(false)
+    }
+  }
 
   const frequencyScore: Record<string, number> = {
     not_at_all: 0,
@@ -70,20 +99,36 @@ export default function AssessmentDetail({ assessment, onBack }: AssessmentDetai
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center gap-4">
-        <button
-          onClick={onBack}
-          className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-        >
-          ← Back
-        </button>
-        <div>
-          <h2 className="text-xl font-semibold text-secondary">Assessment Details</h2>
-          <p className="text-sm text-gray-500">
-            {formatDateTime(created_at)}
-            {used_chat_history && ' • Includes chat context'}
-          </p>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <button
+            onClick={onBack}
+            className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+          >
+            ← Back
+          </button>
+          <div>
+            <h2 className="text-xl font-semibold text-secondary">Assessment Details</h2>
+            <p className="text-sm text-gray-500">
+              {formatDateTime(created_at)}
+              {used_chat_history && ' • Includes chat context'}
+            </p>
+          </div>
         </div>
+        <button
+          onClick={handleDownloadPDF}
+          disabled={isDownloading}
+          className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark disabled:opacity-50 transition-colors text-sm font-medium flex items-center gap-2"
+        >
+          {isDownloading ? (
+            <>
+              <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              Generating...
+            </>
+          ) : (
+            'Download PDF'
+          )}
+        </button>
       </div>
 
       {/* Scores Summary */}

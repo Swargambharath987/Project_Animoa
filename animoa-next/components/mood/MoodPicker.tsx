@@ -79,9 +79,7 @@ export default function MoodPicker({ selectedMood, note: initialNote, onSave, is
                   ? 'bg-gray-100 ring-2 ring-offset-2 scale-110'
                   : 'hover:bg-gray-50 hover:scale-105'
               }`}
-              style={{
-                ringColor: isSelected ? config.color : undefined,
-              }}
+              style={isSelected ? { '--tw-ring-color': config.color } as React.CSSProperties : undefined}
             >
               <span className="text-4xl mb-1">{config.emoji}</span>
               <span className={`text-xs font-medium ${isSelected ? 'text-secondary' : 'text-gray-500'}`}>

@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import QuestionnaireForm from '@/components/assessment/QuestionnaireForm'
 import AssessmentHistory from '@/components/assessment/AssessmentHistory'
 import AssessmentDetail from '@/components/assessment/AssessmentDetail'
+import Toast from '@/components/common/Toast'
 import type { Assessment, AssessmentResponses } from '@/types'
 
 type Tab = 'new' | 'history'
@@ -15,6 +16,7 @@ export default function AssessmentPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [selectedAssessment, setSelectedAssessment] = useState<Assessment | null>(null)
   const [latestAssessment, setLatestAssessment] = useState<Assessment | null>(null)
+  const [toast, setToast] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
 
   const fetchAssessments = useCallback(async () => {
     try {
@@ -49,10 +51,11 @@ export default function AssessmentPage() {
         setSelectedAssessment(data.assessment)
         await fetchAssessments()
       } else {
-        console.error('Failed to submit assessment')
+        setToast({ type: 'error', text: 'Failed to submit assessment. Please try again.' })
       }
     } catch (error) {
       console.error('Assessment submission error:', error)
+      setToast({ type: 'error', text: 'Something went wrong. Please try again.' })
     } finally {
       setIsSubmitting(false)
     }
@@ -95,7 +98,8 @@ export default function AssessmentPage() {
   // If viewing a specific assessment
   if (selectedAssessment) {
     return (
-      <div className="p-6 max-w-4xl mx-auto">
+      <div className="p-6 max-w-4xl mx-auto overflow-y-auto h-full">
+        {toast && <Toast message={toast.text} type={toast.type} onClose={() => setToast(null)} />}
         <AssessmentDetail assessment={selectedAssessment} onBack={handleBack} />
         {latestAssessment?.id === selectedAssessment.id && (
           <div className="mt-6 text-center">
@@ -112,7 +116,8 @@ export default function AssessmentPage() {
   }
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
+    <div className="p-6 max-w-4xl mx-auto overflow-y-auto h-full">
+      {toast && <Toast message={toast.text} type={toast.type} onClose={() => setToast(null)} />}
       <div className="mb-6">
         <h1 className="text-2xl font-semibold text-secondary mb-2">Wellness Assessment</h1>
         <p className="text-gray-500">

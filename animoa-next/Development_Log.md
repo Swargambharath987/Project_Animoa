@@ -439,14 +439,154 @@ animoa-next/
 
 ---
 
-## Next Steps (Phase 4)
+## Session 5 - February 2, 2026
 
-- [ ] Implement PDF generation (jsPDF or react-pdf)
-- [ ] User profile management page
-- [ ] Error handling and loading states polish
-- [ ] Mobile responsiveness improvements
-- [ ] Performance optimization
-- [ ] Final testing and bug fixes
+### Phase 4: Polish & PDF - COMPLETED
+
+#### Step 4.1 - Profile API & Page
+- GET /api/profile - Fetch current user's profile
+- PUT /api/profile - Update profile with field validation
+- Age validation (13-120), stress level validation
+- Safe field whitelist (only allowed fields can be updated)
+- Full profile page: name, age, stress level selector, goals, interests
+- Success/error feedback messages
+
+**Files Created**:
+- `app/api/profile/route.ts` - Profile GET and PUT endpoints
+
+**Files Modified**:
+- `app/(dashboard)/profile/page.tsx` - Full profile management page
+
+#### Step 4.2 - PDF Generation
+- POST /api/pdf - Generate wellness report PDF from assessment
+- Uses jsPDF for server-side PDF creation
+- Report includes: header, scores, responses, recommendations, disclaimer
+- Multi-page support for long recommendations
+- Download button added to AssessmentDetail component
+
+**Files Created**:
+- `app/api/pdf/route.ts` - PDF generation endpoint
+
+**Files Modified**:
+- `components/assessment/AssessmentDetail.tsx` - Added PDF download button
+- `package.json` - Added jspdf dependency
+
+#### Step 4.3 - Mobile Responsive Sidebar
+- Hamburger menu on mobile (< lg breakpoint)
+- Fixed header bar with logo on mobile
+- Slide-out sidebar overlay with backdrop
+- Auto-close on route navigation
+- Close button (X) inside sidebar
+- Desktop sidebar unchanged (permanent)
+
+**Files Modified**:
+- `components/common/Sidebar.tsx` - Full mobile responsive rewrite
+- `app/(dashboard)/layout.tsx` - Added mobile header padding (pt-14 lg:pt-0)
+
+#### Step 4.4 - Bug Fixes & Error Handling Polish
+- Fixed MoodPicker ring color CSS bug (ringColor → --tw-ring-color)
+- Added Toast notification component for user-facing feedback
+- Added toast notifications to assessment page (submit errors)
+- Added toast notifications to mood page (save success/errors)
+- Added slide-in animation for toasts
+- Added overflow-y-auto to scrollable pages
+
+**Files Created**:
+- `components/common/Toast.tsx` - Reusable toast notification component
+
+**Files Modified**:
+- `components/mood/MoodPicker.tsx` - Fixed ring color CSS
+- `app/(dashboard)/assessment/page.tsx` - Added toast errors + scrollable
+- `app/(dashboard)/mood/page.tsx` - Added toast feedback + scrollable
+- `app/globals.css` - Added slide-in animation keyframes
+
+---
+
+## Updated Directory Structure
+
+```
+animoa-next/
+├── app/
+│   ├── (auth)/
+│   │   ├── login/page.tsx
+│   │   └── signup/page.tsx
+│   ├── (dashboard)/
+│   │   ├── assessment/page.tsx
+│   │   ├── chat/
+│   │   │   ├── layout.tsx
+│   │   │   ├── page.tsx
+│   │   │   └── [sessionId]/page.tsx
+│   │   ├── layout.tsx
+│   │   ├── mood/page.tsx
+│   │   └── profile/page.tsx              # Full profile management
+│   ├── api/
+│   │   ├── assessment/
+│   │   │   ├── route.ts
+│   │   │   └── [id]/route.ts
+│   │   ├── chat/route.ts
+│   │   ├── feedback/route.ts
+│   │   ├── mood/
+│   │   │   ├── route.ts
+│   │   │   └── [id]/route.ts
+│   │   ├── pdf/route.ts                  # PDF generation
+│   │   ├── profile/route.ts              # Profile GET/PUT
+│   │   └── sessions/
+│   │       ├── route.ts
+│   │       └── [sessionId]/
+│   │           ├── route.ts
+│   │           └── messages/route.ts
+│   ├── globals.css
+│   ├── layout.tsx
+│   └── page.tsx
+├── components/
+│   ├── assessment/
+│   │   ├── AssessmentDetail.tsx
+│   │   ├── AssessmentHistory.tsx
+│   │   └── QuestionnaireForm.tsx
+│   ├── chat/
+│   │   ├── ChatInput.tsx
+│   │   ├── FeedbackButtons.tsx
+│   │   ├── MessageBubble.tsx
+│   │   └── SessionList.tsx
+│   ├── common/
+│   │   ├── Sidebar.tsx                   # Mobile responsive
+│   │   └── Toast.tsx                     # Toast notifications
+│   ├── crisis/
+│   │   └── CrisisAlert.tsx
+│   └── mood/
+│       ├── MoodCalendar.tsx
+│       ├── MoodChart.tsx
+│       └── MoodPicker.tsx
+├── lib/
+│   ├── supabase/
+│   │   ├── client.ts
+│   │   └── server.ts
+│   ├── crisis-detection.ts
+│   ├── groq.ts
+│   └── utils.ts
+├── types/
+│   └── index.ts
+├── .env.example
+├── .gitignore
+├── Development_Log.md
+├── MIGRATION_PLAN.md
+├── middleware.ts
+├── next.config.js
+├── package.json
+├── postcss.config.js
+├── tailwind.config.ts
+└── tsconfig.json
+```
+
+---
+
+## Next Steps (Phase 5 - Future)
+
+- [ ] Deploy to Vercel
+- [ ] End-to-end testing
+- [ ] Performance optimization (React Query / caching)
+- [ ] Enhanced personalization (conversation pattern analysis)
+- [ ] MCP server integration exploration
 
 ---
 
@@ -471,4 +611,4 @@ GROQ_API_KEY=
 
 ---
 
-*Last Updated: January 28, 2026 (Phase 3 Completed)*
+*Last Updated: February 2, 2026 (Phase 4 Completed)*

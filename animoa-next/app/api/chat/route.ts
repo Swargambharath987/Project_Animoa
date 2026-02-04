@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
 
     // Build messages array for Groq
     const groqMessages = [
-      { role: 'system' as const, content: getSystemPrompt(profile) },
+      { role: 'system' as const, content: getSystemPrompt(profile ?? undefined) },
       ...((conversationHistory || []) as Message[]).map((msg: Message) => ({
         role: msg.role as 'user' | 'assistant',
         content: msg.content,

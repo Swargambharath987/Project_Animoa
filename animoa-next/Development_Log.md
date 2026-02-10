@@ -714,11 +714,59 @@ animoa-next/
 
 ---
 
-## Next Steps (Future Enhancements)
+## Session 7 - February 9, 2026
 
-- [ ] Deploy to Vercel and configure environment variables
-- [ ] Configure Supabase redirect URLs for production domain
-- [ ] End-to-end testing
+### Deployment & Post-Launch Review
+
+#### Deployment - COMPLETED
+- Deployed to Vercel with environment variables configured
+- Supabase redirect URLs configured for production domain
+- Tested login flow successfully on production
+
+#### Step 7.1 - Assessment UI Cleanup
+- Removed clinical labels (PHQ-2 Depression Screening, GAD-2 Anxiety Screening, Additional Factors) from the questionnaire form — users now only see the questions and options
+- Merged PHQ-2 and GAD-2 sections into a single card since they share the same intro text
+- Replaced "PHQ-2" / "GAD-2" labels with "Mood" / "Anxiety" in assessment history and detail views
+- Kept all clinical names as code comments for developer reference
+
+**Files Modified**:
+- `components/assessment/QuestionnaireForm.tsx` - Removed section headers, merged cards
+- `components/assessment/AssessmentHistory.tsx` - User-friendly score labels
+- `components/assessment/AssessmentDetail.tsx` - User-friendly score labels
+
+#### Step 7.2 - Mood Tracker Timezone Fix
+- Fixed date-off-by-one bug: `toISOString()` was converting to UTC, causing dates to shift by a day depending on user's timezone
+- Added `getLocalDateString()` and `parseLocalDate()` helpers to `lib/utils.ts`
+- Fixed today's date calculation, date display in Recent Activity, editing notice, calendar future-date check, and chart date range/labels
+
+**Files Modified**:
+- `lib/utils.ts` - Added local timezone date helpers
+- `app/(dashboard)/mood/page.tsx` - Fixed today calculation and date displays
+- `components/mood/MoodCalendar.tsx` - Fixed future date comparison
+- `components/mood/MoodChart.tsx` - Fixed date range generation and axis labels
+
+---
+
+### Issues Found During Testing (To Fix)
+
+- [ ] **Assessment recommendations still reference PHQ-2/GAD-2** — The AI-generated recommendations text still mentions clinical terms like GAD and PHQ. Need to update the Groq prompt in the assessment API to instruct the LLM to avoid clinical jargon and use plain, user-friendly language instead.
+- [ ] **Assessment recommendations interface needs improvement** — The recommendations display needs a better layout and formatting to make them sound more helpful and approachable.
+- [ ] **PDF report design is too pale** — The current jsPDF-generated PDF looks washed out. Need to bring back the richer design and styling from the original Streamlit MVP version (ReportLab-based) with better colors, formatting, and visual hierarchy.
+
+---
+
+### Project Status
+
+**Current State**: Deployed and live on Vercel. Core features (chat, assessment, mood tracker, profile, PDF) are all functional. Currently in post-launch polish phase — improving assessment recommendations quality, cleaning up clinical terminology from AI outputs, and redesigning the PDF report.
+
+---
+
+## Next Steps
+
+- [ ] Update assessment recommendation prompt to remove clinical jargon (PHQ/GAD references)
+- [ ] Improve recommendations display interface
+- [ ] Redesign PDF report with richer styling matching the Streamlit MVP version
+- [ ] End-to-end testing across features
 - [ ] Enhanced personalization (conversation pattern analysis)
 - [ ] MCP server integration exploration
 - [ ] React Native mobile app (shared component patterns)
@@ -746,4 +794,4 @@ GROQ_API_KEY=
 
 ---
 
-*Last Updated: February 2, 2026 (Phase 5 Completed)*
+*Last Updated: February 9, 2026 (Deployed to Vercel, post-launch polish in progress)*

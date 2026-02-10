@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react'
 import type { MoodEntry, MoodType } from '@/types'
 import { MOOD_CONFIG } from './MoodPicker'
+import { getLocalDateString, parseLocalDate } from '@/lib/utils'
 
 interface MoodChartProps {
   moods: MoodEntry[]
@@ -24,7 +25,7 @@ export default function MoodChart({ moods }: MoodChartProps) {
     for (let i = 0; i < days; i++) {
       const d = new Date(startDate)
       d.setDate(startDate.getDate() + i)
-      dateRange.push(d.toISOString().split('T')[0])
+      dateRange.push(getLocalDateString(d))
     }
 
     // Map moods by date
@@ -206,10 +207,10 @@ export default function MoodChart({ moods }: MoodChartProps) {
           {/* X-axis labels */}
           <div className="flex justify-between mt-2 px-1">
             <span className="text-xs text-gray-400">
-              {new Date(chartData[0].date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+              {parseLocalDate(chartData[0].date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
             </span>
             <span className="text-xs text-gray-400">
-              {new Date(chartData[chartData.length - 1].date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+              {parseLocalDate(chartData[chartData.length - 1].date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
             </span>
           </div>
         </div>

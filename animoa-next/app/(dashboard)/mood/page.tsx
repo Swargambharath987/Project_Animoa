@@ -7,6 +7,7 @@ import MoodChart from '@/components/mood/MoodChart'
 import Toast from '@/components/common/Toast'
 import { MoodCalendarSkeleton } from '@/components/common/Skeleton'
 import { MOOD_CONFIG } from '@/components/mood/MoodPicker'
+import { getLocalDateString, parseLocalDate } from '@/lib/utils'
 import type { MoodEntry, MoodType } from '@/types'
 
 export default function MoodPage() {
@@ -17,7 +18,7 @@ export default function MoodPage() {
   const [selectedEntry, setSelectedEntry] = useState<MoodEntry | null>(null)
   const [toast, setToast] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
 
-  const today = new Date().toISOString().split('T')[0]
+  const today = getLocalDateString()
   const todayEntry = moods.find((m) => m.date === today)
 
   const fetchMoods = useCallback(async () => {
@@ -129,7 +130,7 @@ export default function MoodPage() {
               <div>
                 <p className="text-sm text-blue-700 font-medium">
                   {selectedEntry ? 'Editing' : 'Logging'} mood for{' '}
-                  {new Date(selectedDate).toLocaleDateString('en-US', {
+                  {parseLocalDate(selectedDate).toLocaleDateString('en-US', {
                     weekday: 'long',
                     month: 'long',
                     day: 'numeric',
@@ -194,7 +195,7 @@ export default function MoodPage() {
                     </span>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-secondary">
-                        {new Date(entry.date).toLocaleDateString('en-US', {
+                        {parseLocalDate(entry.date).toLocaleDateString('en-US', {
                           weekday: 'short',
                           month: 'short',
                           day: 'numeric',

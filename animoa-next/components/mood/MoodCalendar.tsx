@@ -115,7 +115,7 @@ export default function MoodCalendar({ moods, onDateClick }: MoodCalendarProps) 
           const dateString = formatDateString(day)
           const entry = moodByDate[dateString]
           const isToday = dateString === todayString
-          const isFuture = new Date(dateString) > today
+          const isFuture = dateString > todayString
 
           return (
             <button

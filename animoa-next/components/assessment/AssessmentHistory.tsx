@@ -113,11 +113,13 @@ export default function AssessmentHistory({ assessments, onDelete, onView }: Ass
                 </div>
 
                 <div className="flex gap-4 mb-3">
+                  {/* PHQ-2 depression score */}
                   <div className={`px-3 py-1.5 rounded-lg text-sm font-medium ${getScoreColor(phq2)}`}>
-                    PHQ-2: {phq2}/6
+                    Mood: {phq2}/6
                   </div>
+                  {/* GAD-2 anxiety score */}
                   <div className={`px-3 py-1.5 rounded-lg text-sm font-medium ${getScoreColor(gad2)}`}>
-                    GAD-2: {gad2}/6
+                    Anxiety: {gad2}/6
                   </div>
                 </div>
 

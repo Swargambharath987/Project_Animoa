@@ -66,12 +66,12 @@ export default function QuestionnaireForm({ onSubmit, isSubmitting }: Questionna
 
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
-      {/* PHQ-2 Section */}
+      {/* PHQ-2 Depression Screening + GAD-2 Anxiety Screening questions */}
       <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-        <h3 className="text-lg font-semibold text-secondary mb-1">PHQ-2 Depression Screening</h3>
         <p className="text-sm text-gray-500 mb-6">Over the last 2 weeks, how often have you been bothered by:</p>
 
         <div className="space-y-6">
+          {/* PHQ-2: Depression screening */}
           <QuestionBlock
             question="Feeling down, depressed, or hopeless?"
             value={mood}
@@ -86,15 +86,7 @@ export default function QuestionnaireForm({ onSubmit, isSubmitting }: Questionna
             options={frequencyOptions}
             name="interest"
           />
-        </div>
-      </div>
-
-      {/* GAD-2 Section */}
-      <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-        <h3 className="text-lg font-semibold text-secondary mb-1">GAD-2 Anxiety Screening</h3>
-        <p className="text-sm text-gray-500 mb-6">Over the last 2 weeks, how often have you been bothered by:</p>
-
-        <div className="space-y-6">
+          {/* GAD-2: Anxiety screening */}
           <QuestionBlock
             question="Feeling nervous, anxious, or on edge?"
             value={anxiety}
@@ -112,10 +104,8 @@ export default function QuestionnaireForm({ onSubmit, isSubmitting }: Questionna
         </div>
       </div>
 
-      {/* Additional Factors */}
+      {/* Additional factors: sleep, support, coping */}
       <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-        <h3 className="text-lg font-semibold text-secondary mb-6">Additional Factors</h3>
-
         <div className="space-y-6">
           <QuestionBlock
             question="How would you rate your sleep quality?"

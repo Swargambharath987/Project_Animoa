@@ -133,8 +133,9 @@ export default function AssessmentDetail({ assessment, onBack }: AssessmentDetai
 
       {/* Scores Summary */}
       <div className="grid grid-cols-2 gap-4">
+        {/* PHQ-2 depression score */}
         <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
-          <h3 className="text-sm font-medium text-gray-500 mb-2">PHQ-2 Score</h3>
+          <h3 className="text-sm font-medium text-gray-500 mb-2">Mood Score</h3>
           <div className="flex items-baseline gap-2">
             <span className="text-3xl font-bold text-secondary">{phq2}</span>
             <span className="text-gray-400">/ 6</span>
@@ -143,8 +144,9 @@ export default function AssessmentDetail({ assessment, onBack }: AssessmentDetai
             {getScoreInterpretation(phq2, 'phq').text}
           </p>
         </div>
+        {/* GAD-2 anxiety score */}
         <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
-          <h3 className="text-sm font-medium text-gray-500 mb-2">GAD-2 Score</h3>
+          <h3 className="text-sm font-medium text-gray-500 mb-2">Anxiety Score</h3>
           <div className="flex items-baseline gap-2">
             <span className="text-3xl font-bold text-secondary">{gad2}</span>
             <span className="text-gray-400">/ 6</span>

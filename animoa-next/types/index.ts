@@ -78,3 +78,21 @@ export interface CrisisResources {
   title: string
   message: string
 }
+
+// Knowledge Base (RAG)
+export interface KnowledgeEntry {
+  id: string
+  category: string
+  subcategory: string | null
+  title: string
+  content: string
+  tags: string[]
+  severity_relevance: string[]
+  assessment_domains: string[]
+  source: string | null
+  created_at: string
+}
+
+export interface KnowledgeSearchResult extends KnowledgeEntry {
+  similarity: number
+}

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createGroqClient, GROQ_MODEL, getSystemPrompt } from '@/lib/groq'
+import { createGroqClient, GROQ_MODEL, getSystemPromptWithRAG } from '@/lib/groq'
 import { createClient } from '@/lib/supabase/server'
+import { retrieveKnowledge, formatKnowledgeContext } from '@/lib/rag'
 import type { Message } from '@/types'
 
 export async function POST(request: NextRequest) {
@@ -37,9 +38,16 @@ export async function POST(request: NextRequest) {
       })
     }
 
-    // Build messages array for Groq
+    // RAG: Retrieve relevant knowledge based on user's message
+    const knowledgeResults = await retrieveKnowledge(message, {
+      matchCount: 3,
+      similarityThreshold: 0.45,
+    })
+    const knowledgeContext = formatKnowledgeContext(knowledgeResults)
+
+    // Build messages array for Groq with RAG-enhanced system prompt
     const groqMessages = [
-      { role: 'system' as const, content: getSystemPrompt(profile ?? undefined) },
+      { role: 'system' as const, content: getSystemPromptWithRAG(profile ?? undefined, knowledgeContext || undefined) },
       ...((conversationHistory || []) as Message[]).map((msg: Message) => ({
         role: msg.role as 'user' | 'assistant',
         content: msg.content,

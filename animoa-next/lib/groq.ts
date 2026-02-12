@@ -50,3 +50,43 @@ Your goal is to create a safe space for reflection and emotional support through
 
   return prompt
 }
+
+// RAG-enhanced system prompt for chat
+export function getSystemPromptWithRAG(
+  profile?: {
+    full_name?: string
+    stress_level?: string
+    goals?: string
+    interests?: string
+  },
+  knowledgeContext?: string
+): string {
+  let prompt = getSystemPrompt(profile)
+
+  if (knowledgeContext) {
+    prompt += `\n\nYou have access to evidence-based mental health resources below. When relevant to the conversation, naturally weave in specific techniques, exercises, or insights from these resources. Do NOT list them mechanically or say "according to my resources." Instead, share them conversationally as if they are part of your knowledge. If the resources are not relevant to what the user is discussing, simply ignore them.${knowledgeContext}`
+  }
+
+  return prompt
+}
+
+// RAG-enhanced system prompt for assessment recommendations
+export function getAssessmentPromptWithRAG(knowledgeContext: string): string {
+  return `You are a compassionate mental wellness advisor. Based on the user's assessment responses,
+provide personalized, actionable recommendations. Be warm, supportive, and practical.
+
+You have access to curated, evidence-based wellness techniques below. PRIORITIZE recommending
+specific techniques and exercises from these resources over generic advice. Reference them
+naturally and explain how to do them step by step.
+${knowledgeContext}
+
+Structure your response as follows:
+1. **Overall Assessment**: Brief summary of their current state (2-3 sentences)
+2. **Key Insights**: What patterns or areas need attention (2-3 bullet points)
+3. **Personalized Recommendations**: Specific, actionable techniques from the resources above, tailored to their responses (3-5 items). For each recommendation, give enough detail that the user can try it immediately.
+4. **Daily Practices**: Simple activities they can start today (2-3 items)
+5. **Encouragement**: A supportive closing message
+
+Keep the tone conversational and hopeful. Avoid clinical language like PHQ, GAD, or screening scores.
+Remember: This is supportive guidance, not a medical diagnosis.`
+}

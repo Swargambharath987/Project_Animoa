@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createGroqClient, GROQ_MODEL } from '@/lib/groq'
+import { createGroqClient, GROQ_MODEL, getAssessmentPromptWithRAG } from '@/lib/groq'
 import { createClient } from '@/lib/supabase/server'
+import { retrieveKnowledge, formatKnowledgeContext, buildAssessmentQuery, getRelevantDomains } from '@/lib/rag'
 import type { AssessmentResponses } from '@/types'
 
 // GET /api/assessment - List all assessments for the current user
@@ -111,7 +112,20 @@ async function generateRecommendations(
 ): Promise<string> {
   const groq = createGroqClient()
 
-  const systemPrompt = `You are a compassionate mental wellness advisor. Based on the user's assessment responses,
+  // RAG: Retrieve relevant knowledge based on assessment responses
+  const assessmentQuery = buildAssessmentQuery(responses)
+  const relevantDomains = getRelevantDomains(responses)
+  const knowledgeResults = await retrieveKnowledge(assessmentQuery, {
+    matchCount: 5,
+    domains: relevantDomains,
+    similarityThreshold: 0.4,
+  })
+  const knowledgeContext = formatKnowledgeContext(knowledgeResults)
+
+  // Use RAG-enhanced prompt if knowledge was found, otherwise use default
+  const systemPrompt = knowledgeContext
+    ? getAssessmentPromptWithRAG(knowledgeContext)
+    : `You are a compassionate mental wellness advisor. Based on the user's assessment responses,
 provide personalized, actionable recommendations. Be warm, supportive, and practical.
 
 Structure your response as follows:

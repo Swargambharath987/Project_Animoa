@@ -757,18 +757,70 @@ animoa-next/
 
 ### Project Status
 
-**Current State**: Deployed and live on Vercel. Core features (chat, assessment, mood tracker, profile, PDF) are all functional. Currently in post-launch polish phase — improving assessment recommendations quality, cleaning up clinical terminology from AI outputs, and redesigning the PDF report.
+**Current State**: Deployed and live on Vercel. RAG integration code is complete — pending database setup (pgvector) and knowledge base seeding.
+
+---
+
+## Session 8 — February 12, 2026
+
+### Focus: RAG Integration for Evidence-Based AI Recommendations
+
+**Problem**: AI recommendations relied solely on Llama 3.3 70B's training knowledge — responses were generic, not grounded in specific evidence-based mental health techniques.
+
+**Decision**: Chose RAG over MCP for this use case. RAG makes the AI smarter (references curated knowledge), while MCP makes it more connected (access to tools/data). Animoa already handles data access through direct Supabase queries, but needs better recommendation quality.
+
+### What Was Done
+
+1. **Created RAG implementation plan** (`RAG_PLAN.md`)
+   - Designed pgvector schema, knowledge base taxonomy, retrieval flows
+   - 9 content categories: CBT techniques, anxiety management, depression coping, mindfulness, sleep hygiene, social support, stress management, coping strategies, psychoeducation
+   - Embedding model: `BAAI/bge-small-en-v1.5` via HuggingFace API (free, 384 dimensions)
+
+2. **Built RAG foundation libraries**
+   - `lib/embeddings.ts` — Embedding generation via HuggingFace Inference API
+   - `lib/rag.ts` — Core retrieval logic: `retrieveKnowledge()`, `formatKnowledgeContext()`, `buildAssessmentQuery()`, `getRelevantDomains()`
+   - All functions include graceful degradation — RAG failures fall back silently to non-RAG behavior
+
+3. **Added RAG-aware prompts to `lib/groq.ts`**
+   - `getSystemPromptWithRAG()` — Chat prompt that instructs LLM to naturally weave in retrieved techniques
+   - `getAssessmentPromptWithRAG()` — Assessment prompt that prioritizes specific exercises from retrieved resources
+
+4. **Integrated RAG into API routes**
+   - `app/api/chat/route.ts` — Embeds user message → retrieves top 3 knowledge entries → injects into system prompt
+   - `app/api/assessment/route.ts` — Builds assessment query from scores → retrieves top 5 domain-filtered entries → uses RAG-enhanced prompt
+
+5. **Updated types, config, and package.json**
+   - Added `KnowledgeEntry` and `KnowledgeSearchResult` to `types/index.ts`
+   - Added `HUGGINGFACE_API_KEY` to `.env.example`
+   - Added `tsx` dev dependency and `seed-knowledge` script to `package.json`
+
+### RAG Architecture
+
+```
+Chat:       User message → embed → pgvector search (top 3) → inject into system prompt → Groq
+Assessment: Scores → build query → pgvector search (top 5, domain-filtered) → inject into prompt → Groq
+Fallback:   Any RAG failure → silently use original non-RAG prompt
+```
+
+### Remaining Steps for RAG
+
+- [ ] Run SQL in Supabase to enable pgvector, create `knowledge_base` table, create `match_knowledge` RPC function
+- [ ] Get HuggingFace API key, add to `.env.local` and Vercel env vars
+- [ ] Write seed script with 60-80 curated knowledge entries (`scripts/seed-knowledge-base.ts`)
+- [ ] Run seed script to populate knowledge base
+- [ ] Test chat and assessment with RAG-enhanced responses
+- [ ] Tune similarity thresholds and match counts
 
 ---
 
 ## Next Steps
 
-- [ ] Update assessment recommendation prompt to remove clinical jargon (PHQ/GAD references)
+- [ ] Complete RAG setup (Supabase pgvector + seed knowledge base)
+- [ ] Test RAG-enhanced chat and assessment recommendations
 - [ ] Improve recommendations display interface
 - [ ] Redesign PDF report with richer styling matching the Streamlit MVP version
 - [ ] End-to-end testing across features
 - [ ] Enhanced personalization (conversation pattern analysis)
-- [ ] MCP server integration exploration
 - [ ] React Native mobile app (shared component patterns)
 
 ---
@@ -790,8 +842,9 @@ NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
 SUPABASE_SERVICE_ROLE_KEY=
 GROQ_API_KEY=
+HUGGINGFACE_API_KEY=
 ```
 
 ---
 
-*Last Updated: February 9, 2026 (Deployed to Vercel, post-launch polish in progress)*
+*Last Updated: February 12, 2026 (RAG integration code complete, pending database setup and knowledge base seeding)*

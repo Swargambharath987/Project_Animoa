@@ -1,25 +1,26 @@
-# Next.js migration (separate project)
-animoa-next/
+# Dependencies
+node_modules/
 
-# Archived versions
+# Next.js build output (rebuilt in Docker)
+.next/
+
+# Archived old MVP files
 archive/
 
 # Git
 .git/
-.gitignore
 
 # Documentation
 *.md
-*.pdf
-
-# Dev container
-.devcontainer/
+CLAUDE.md
 
 # Environment files (passed at runtime)
 .env
 .env.*
+.env.local
 
 # OS files
 .DS_Store
-__pycache__/
-*.pyc
+
+# Logo (not needed in container)
+logo.png

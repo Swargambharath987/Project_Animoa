@@ -1,719 +1,202 @@
-# CLAUDE.md - AI Assistant Guide for Animoa
+# CLAUDE.md — Animoa
 
-> Comprehensive guide for AI assistants working with the Animoa mental health companion application
+## What is Animoa
 
-## Table of Contents
-1. [Project Overview](#project-overview)
-2. [Repository Structure](#repository-structure)
-3. [Architecture & Tech Stack](#architecture--tech-stack)
-4. [Development Workflow](#development-workflow)
-5. [Code Conventions](#code-conventions)
-6. [Key Files & Modules](#key-files--modules)
-7. [Database Schema](#database-schema)
-8. [API Integrations](#api-integrations)
-9. [Session State Management](#session-state-management)
-10. [Testing & Deployment](#testing--deployment)
-11. [Common Tasks](#common-tasks)
-12. [Important Notes](#important-notes)
+Mental health companion web app. Users chat with an empathetic AI, take wellness assessments (PHQ-2/GAD-2), track daily mood, and get personalized recommendations. Built with Next.js 14 + Supabase + Groq (Llama 3.3 70B).
+
+**Repo**: https://github.com/Swargambharath987/Project_Animoa
 
 ---
 
-## Project Overview
-
-**Animoa** is a mental health companion web application built with Streamlit that provides:
-- AI-powered empathetic conversations using Groq LLM
-- Mental wellness assessments (PHQ-2, GAD-2 validated screening tools)
-- Personal mood tracking with calendar visualization
-- User profile management with language preferences
-- Multi-language support (English, Spanish, Mandarin Chinese)
-- Secure authentication and data persistence via Supabase
-
-**Target Users**: Individuals seeking mental wellness support through accessible, conversational AI
-**Purpose**: Provide a safe, judgment-free space for mental health conversations and personalized insights
-
----
-
-## Repository Structure
+## Repo Structure
 
 ```
 Project_Animoa/
-├── .devcontainer/
-│   └── devcontainer.json          # Dev container config for Codespaces/VS Code
-├── .git/                          # Git repository metadata
-├── archive/                       # 📁 Archived previous versions (v1-v6)
-│   ├── foundation_chatbot.py      # Early prototype (reference only)
-│   ├── v1_main_app.py             # Version 1: Basic chat
-│   ├── v2_main_app.py             # Version 2: Profiles & assessments
-│   ├── v3_main_app.py             # Version 3: Multi-language support
-│   ├── v4_main_app.py             # Version 4: Sessions & feedback
-│   ├── v5_main_app.py             # Version 5: Code refactoring & UI
-│   └── v6_main_app.py             # Version 6: Mood tracking
-├── main_app_v7.py                 # ⭐ CURRENT PRODUCTION VERSION
-├── translations.py                # Multi-language translations (EN, ES, ZH)
-├── requirements.txt               # Python dependencies
-├── logo.png                       # Application logo
-├── README.md                      # User-facing documentation
-├── CLAUDE.md                      # AI assistant guide (this file)
-├── VERSION_HISTORY.md             # Detailed version evolution documentation
-├── Animoa_Brochure.pdf           # Marketing/project brochure
-└── Capstone_Project_Animoa_12May'25.pptx.pdf  # Project presentation
-```
-
-### Version History Notes
-- **main_app_v7.py**: Current production version with full feature set (chat, wellness, mood tracking, analytics, PDF reports)
-- **archive/**: Contains all previous versions (v1-v6) preserved to show development journey
-- **VERSION_HISTORY.md**: Comprehensive documentation of features added in each version
-- **foundation_chatbot.py**: Early minimal prototype (archived)
-
----
-
-## Architecture & Tech Stack
-
-### Core Technologies
-
-| Technology | Purpose | Version/Notes |
-|------------|---------|---------------|
-| **Streamlit** | Web framework & UI | Primary interface layer |
-| **Groq** | LLM API for AI responses | Model: `llama-3.3-70b-versatile` |
-| **Supabase** | Authentication & database | PostgreSQL backend |
-| **ReportLab** | PDF generation | For wellness reports |
-| **Pandas** | Data manipulation | Mood tracking analytics |
-| **Python** | Programming language | 3.11+ (per devcontainer) |
-
-### Application Architecture
-
-```
-┌─────────────────────────────────────────────────────────┐
-│                    Streamlit UI Layer                    │
-│  (Page Config, CSS Theming, Navigation, Session State)  │
-└────────────────────┬────────────────────────────────────┘
-                     │
-        ┌────────────┴────────────┐
-        │                         │
-┌───────▼─────────┐      ┌───────▼────────┐
-│   Groq API      │      │   Supabase     │
-│  (LLM Calls)    │      │  (Auth & DB)   │
-└─────────────────┘      └────────────────┘
-        │                         │
-        │ Responses              │ User Data
-        │                         │
-┌───────▼─────────────────────────▼────────┐
-│         Application Features              │
-│  • Chat (MentalHealthChatbot class)      │
-│  • Wellness Advisory                      │
-│  • Mood Tracker                           │
-│  • Profile Management                     │
-│  • Authentication Flow                    │
-└───────────────────────────────────────────┘
+├── app/                    # Next.js App Router
+│   ├── (auth)/             # Auth pages (login, signup, forgot-password, reset-password)
+│   ├── (dashboard)/        # Protected pages (chat, mood, assessment, profile)
+│   ├── api/                # API routes (see below)
+│   ├── auth/callback/      # Supabase OAuth callback
+│   ├── layout.tsx          # Root layout (Inter font, metadata)
+│   ├── page.tsx            # Landing page
+│   └── globals.css         # Tailwind base styles
+├── components/
+│   ├── assessment/         # QuestionnaireForm, AssessmentDetail, AssessmentHistory
+│   ├── chat/               # ChatInput, MessageBubble, FeedbackButtons, SessionList
+│   ├── common/             # Sidebar, Skeleton, Toast
+│   ├── crisis/             # CrisisAlert
+│   └── mood/               # MoodPicker, MoodCalendar, MoodChart
+├── lib/
+│   ├── supabase/
+│   │   ├── client.ts       # Browser Supabase client
+│   │   └── server.ts       # Server Supabase client (cookies-based)
+│   ├── groq.ts             # Groq client, system prompts, RAG-enhanced prompts
+│   ├── rag.ts              # RAG retrieval, context formatting, assessment query builder
+│   ├── embeddings.ts       # HuggingFace embedding generation (BAAI/bge-small-en-v1.5)
+│   ├── crisis-detection.ts # Crisis keyword detection + resources (988, Crisis Text Line)
+│   └── utils.ts            # Shared utilities
+├── types/
+│   └── index.ts            # All TypeScript interfaces (Profile, Message, MoodEntry, etc.)
+├── docs/                   # Planning & logs
+│   ├── Development_Log.md  # Session-by-session dev log
+│   ├── RAG_PLAN.md         # RAG integration plan (pgvector, knowledge base design)
+│   ├── MIGRATION_PLAN.md   # Streamlit → Next.js migration plan
+│   └── MCP_MEMORY_PLAN.md  # MCP exploration notes
+├── public/
+│   └── logo.png            # App logo (served at /logo.png)
+├── archive/                # Old Streamlit MVP (main_app_v7.py, translations.py, etc.)
+├── middleware.ts            # Auth guard — protects /chat, /mood, /assessment, /profile
+├── package.json
+├── tsconfig.json
+├── next.config.js
+├── tailwind.config.ts
+├── postcss.config.js
+├── vercel.json
+├── Dockerfile              # Multi-stage Node.js 20 build for production
+├── docker-compose.yml
+├── .dockerignore
+├── .env.example
+├── .gitignore
+├── README.md
+└── CLAUDE.md               # This file
 ```
 
 ---
 
-## Development Workflow
+## Tech Stack
 
-### Environment Setup
-
-1. **Clone Repository**
-   ```bash
-   git clone https://github.com/Swargambharath987/Project_Animoa.git
-   cd Project_Animoa
-   ```
-
-2. **Install Dependencies**
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-3. **Configure Environment Variables**
-   Create a `.env` file in project root:
-   ```env
-   SUPABASE_URL=https://your-project.supabase.co
-   SUPABASE_KEY=your-anon-key
-   GROQ_API_KEY=your-groq-api-key
-   ```
-
-4. **Run Application**
-   ```bash
-   streamlit run main_app_v7.py
-   ```
-   App will be available at `http://localhost:8501`
-
-### Development Container (Codespaces/VS Code)
-
-The `.devcontainer/devcontainer.json` provides:
-- Python 3.11 environment
-- Auto-install dependencies on container creation
-- Automatic Streamlit server startup
-- Port 8501 forwarding with preview
-
-**Note**: Update `devcontainer.json` line 22 to use `main_app_v7.py` instead of `main_app_v6.py`
+| Layer | Technology |
+|-------|-----------|
+| Framework | Next.js 14 (App Router) |
+| Language | TypeScript |
+| UI | Tailwind CSS, Lucide icons |
+| State | Zustand |
+| Auth & DB | Supabase (PostgreSQL + Auth + RLS) |
+| AI | Groq SDK → Llama 3.3 70B Versatile |
+| RAG | pgvector (Supabase), HuggingFace API (bge-small-en-v1.5, 384 dims) |
+| PDF | jspdf |
+| Deployment | Vercel (primary), Docker (optional) |
 
 ---
 
-## Code Conventions
+## API Routes
 
-### File Naming
-- Main application versions: `main_app_v{X}.py` (increment version for major changes)
-- Keep previous versions for rollback capability
-- Use descriptive names for utility modules (e.g., `translations.py`)
+| Route | Method | Purpose |
+|-------|--------|---------|
+| `/api/chat` | POST | Send message → RAG retrieval → Groq streaming response |
+| `/api/assessment` | GET | List user's assessments |
+| `/api/assessment` | POST | Submit assessment → RAG-enhanced recommendations |
+| `/api/assessment/[id]` | GET | Get single assessment |
+| `/api/mood` | GET/POST | List or log mood entries |
+| `/api/mood/[id]` | PUT/DELETE | Update or delete mood entry |
+| `/api/sessions` | GET/POST | List or create chat sessions |
+| `/api/sessions/[sessionId]` | DELETE | Delete a chat session |
+| `/api/sessions/[sessionId]/messages` | GET | Get messages for a session |
+| `/api/feedback` | POST | Submit feedback on AI response |
+| `/api/profile` | GET/PUT | Get or update user profile |
+| `/api/pdf` | POST | Generate wellness report PDF |
 
-### Code Style
-- **Indentation**: 4 spaces (Python standard)
-- **Imports**: Group by standard library → third-party → local modules
-- **Functions**: Snake_case naming (e.g., `generate_recommendations()`)
-- **Classes**: PascalCase naming (e.g., `MentalHealthChatbot`)
-- **Constants**: UPPER_SNAKE_CASE (e.g., `SUPABASE_URL`)
-
-### Streamlit Conventions
-- Set page config as **first Streamlit command** (before any other st calls)
-- Use `st.session_state` for all stateful data
-- Apply custom CSS via `st.markdown(..., unsafe_allow_html=True)`
-- Use `@st.cache_data` for expensive operations (e.g., translation loading)
-
-### AI Response Patterns
-- Use **system prompts** to set empathetic, supportive tone
-- Include language in system prompt for multilingual responses
-- Temperature: 0.7 (balanced between creativity and consistency)
-- Max tokens: 300 for chat, 800 for recommendations
-- Always handle API errors gracefully with fallback messages
+All API routes authenticate via `supabase.auth.getUser()` and return 401 if not logged in.
 
 ---
 
-## Key Files & Modules
+## Auth Flow
 
-### main_app_v7.py (Current Production)
-
-**Primary Sections:**
-1. **Page Configuration** (lines 1-91): Theme, CSS, imports
-2. **Helper Functions** (lines 93-310): API key retrieval, auth UI, profile management
-3. **Crisis Detection** (lines 428-504): Crisis keyword detection and resource display
-4. **MentalHealthChatbot Class** (lines 506-1100): Core chat functionality with crisis detection integration
-5. **Wellness Advisory** (lines 1290-1810): PHQ-2/GAD-2 questionnaires
-6. **Mood Tracker** (lines 1812-2430): Daily mood logging
-7. **Feedback System** (lines 2432-2500): Logout feedback collection
-8. **About Section** (lines 2502-2620): App information
-9. **Main Function** (lines 2622+): Navigation and routing
-
-**Key Functions:**
-
-| Function | Purpose | Location |
-|----------|---------|----------|
-| `get_api_key(key_name)` | Retrieve API keys from .env or secrets | Line 117 |
-| `auth_ui(supabase)` | Login/signup interface | Line 139 |
-| `ensure_profile_exists(user_id, email)` | Create default profile on signup | Line 295 |
-| `profile_manager(supabase)` | User profile CRUD (age min: 13) | Line 312 |
-| `detect_crisis(message)` | Check for crisis keywords in user messages | Line 489 |
-| `show_crisis_resources(language)` | Display crisis hotlines and resources | Line 498 |
-| `generate_recommendations(responses, chat_history)` | AI wellness insights | Line 1670 |
-| `create_wellness_pdf(responses, recommendations)` | PDF generation | Line 1100 |
-| `mood_tracker()` | Mood logging interface | Line 1812 |
-| `show_logout_feedback_form()` | Collect feedback on logout | Line 2432 |
-
-### translations.py
-
-**Purpose**: Multi-language support for UI strings
-
-**Structure:**
-```python
-@st.cache_data
-def load_translations():
-    return {
-        "en": {...},  # English translations
-        "es": {...},  # Spanish translations
-        "zh": {...}   # Mandarin Chinese translations
-    }
-```
-
-**Usage Pattern:**
-```python
-t = load_translations()[st.session_state.language]
-st.write(t["welcome_message"])
-```
-
-**Translation Keys**: 80+ keys covering all UI elements (buttons, labels, messages)
-
-### archive/ Directory
-
-**Purpose**: Historical versions preserved to show development journey
-
-**Location**: `archive/` directory contains:
-- `foundation_chatbot.py` - Early chatbot prototype (reference only)
-- `v1_main_app.py` through `v6_main_app.py` - Previous production versions
-
-**Key Differences from main_app_v7.py** (using foundation_chatbot.py as example):
-- No authentication
-- Simpler chat interface
-- No database persistence
-- Uses `qwen-2.5-32b` model (vs `llama-3.3-70b-versatile`)
-- No multi-language support
-
-**For detailed version history**: See `VERSION_HISTORY.md` for comprehensive documentation of features added in each version
+- **Supabase Auth** with email/password
+- `middleware.ts` protects dashboard routes — redirects unauthenticated users to `/login`
+- Logged-in users on auth pages get redirected to `/chat`
+- Two Supabase clients:
+  - `lib/supabase/client.ts` — browser-side (`createBrowserClient`)
+  - `lib/supabase/server.ts` — server-side (`createServerClient` with cookies)
+- OAuth callback at `/auth/callback`
 
 ---
 
-## Database Schema
+## RAG Pipeline
 
-### Supabase Tables
+**Status**: Code integrated, needs knowledge base seeding (see `docs/RAG_PLAN.md`).
 
-#### 1. profiles
-```sql
-CREATE TABLE profiles (
-    id UUID PRIMARY KEY REFERENCES auth.users(id),
-    email TEXT,
-    full_name TEXT,
-    age INTEGER,
-    stress_level TEXT,
-    goals TEXT,
-    interests TEXT,
-    preferred_language TEXT DEFAULT 'en'
-);
+```
+Chat:       user message → embed (HF API) → pgvector search (top 3) → inject into system prompt → Groq
+Assessment: responses → build query → embed → pgvector search (top 5, domain-filtered) → inject → Groq
 ```
 
-**Access Pattern**: One-to-one with auth.users
+- Embeddings: `lib/embeddings.ts` — calls HuggingFace Inference API
+- Retrieval: `lib/rag.ts` — calls `match_knowledge` Supabase RPC function
+- Prompts: `lib/groq.ts` — `getSystemPromptWithRAG()` for chat, `getAssessmentPromptWithRAG()` for assessments
+- **Graceful degradation**: any RAG failure silently falls back to non-RAG behavior (returns empty array)
 
-#### 2. chat_sessions
-```sql
-CREATE TABLE chat_sessions (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID REFERENCES auth.users(id),
-    title TEXT,
-    created_at TIMESTAMP DEFAULT NOW()
-);
-```
-
-**Access Pattern**: One user → Many sessions
-
-#### 3. chat_history
-```sql
-CREATE TABLE chat_history (
-    id SERIAL PRIMARY KEY,
-    user_id UUID REFERENCES auth.users(id),
-    session_id UUID REFERENCES chat_sessions(id),
-    message TEXT,
-    sender TEXT CHECK (sender IN ('user', 'bot', 'feedback')),
-    timestamp TIMESTAMP DEFAULT NOW(),
-    feedback_for_message_index INTEGER
-);
-```
-
-**Access Pattern**: One session → Many messages
-
-#### 4. mood_logs
-```sql
-CREATE TABLE mood_logs (
-    id SERIAL PRIMARY KEY,
-    user_id UUID REFERENCES auth.users(id),
-    date DATE,
-    mood TEXT,  -- mood_key from mood_emojis
-    note TEXT,
-    timestamp TIMESTAMP DEFAULT NOW(),
-    UNIQUE(user_id, date)
-);
-```
-
-**Access Pattern**: One user → Many daily mood logs
-
-#### 5. questionnaire_responses
-```sql
-CREATE TABLE questionnaire_responses (
-    id SERIAL PRIMARY KEY,
-    user_id UUID REFERENCES auth.users(id),
-    responses JSONB,  -- {mood, interest, anxiety, worry, sleep, support, coping, language}
-    recommendations TEXT,
-    created_at TIMESTAMP DEFAULT NOW()
-);
-```
-
-**Access Pattern**: One user → Many assessments
-
-### Data Access Patterns
-
-**Best Practices:**
-- Always filter by `user_id` for user-specific data
-- Use `.order('created_at', desc=True)` for chronological data
-- Handle Supabase errors with try-except blocks
-- Refresh tokens on `AuthRetryableError`
+### RAG remaining work
+1. Run pgvector SQL in Supabase (table + indexes + RPC function — see `docs/RAG_PLAN.md`)
+2. Get HuggingFace API key, add to `.env.local`
+3. Write + run seed script (`scripts/seed-knowledge-base.ts`) with 60-80 knowledge entries
+4. Test and tune similarity thresholds
 
 ---
 
-## API Integrations
+## Database Tables (Supabase)
 
-### Groq API
+| Table | Purpose |
+|-------|---------|
+| `profiles` | User profile (name, age, stress_level, goals, interests) |
+| `chat_sessions` | Chat session metadata (title, created_at) |
+| `chat_history` | Messages (user/bot/feedback) per session |
+| `mood_logs` | Daily mood entries with notes (unique per user+date) |
+| `questionnaire_responses` | Assessment responses + AI recommendations |
+| `knowledge_base` | RAG entries with pgvector embeddings (pending setup) |
 
-**Configuration:**
-```python
-client = Groq(api_key=os.getenv('GROQ_API_KEY'))
-```
+All tables use RLS filtered by `user_id`.
 
-**Model**: `llama-3.3-70b-versatile`
-- Open-source LLM optimized for speed
-- 70B parameters (strong reasoning capability)
-- Cost-effective (free tier available)
+---
 
-**Chat Completion Pattern:**
-```python
-chat_completion = client.chat.completions.create(
-    model="llama-3.3-70b-versatile",
-    messages=[
-        {"role": "system", "content": system_prompt},
-        {"role": "user", "content": user_message}
-    ],
-    temperature=0.7,
-    max_tokens=300
-)
-response = chat_completion.choices[0].message.content
-```
+## Environment Variables
 
-**System Prompts:**
-- Chat: Empathetic, supportive, non-judgmental tone
-- Recommendations: Structured, evidence-based advice
-- Language-specific: Include target language in prompt
-
-### Supabase
-
-**Authentication:**
-```python
-from supabase import create_client
-
-supabase = create_client(
-    os.getenv('SUPABASE_URL'),
-    os.getenv('SUPABASE_KEY')
-)
-
-# Sign up
-auth_response = supabase.auth.sign_up({
-    "email": email,
-    "password": password
-})
-
-# Sign in
-auth_response = supabase.auth.sign_in_with_password({
-    "email": email,
-    "password": password
-})
-
-# Store tokens
-st.session_state.access_token = auth_response.session.access_token
-st.session_state.refresh_token = auth_response.session.refresh_token
-```
-
-**Database Operations:**
-```python
-# INSERT
-supabase.table('profiles').insert({
-    "id": user_id,
-    "email": email,
-    "full_name": name
-}).execute()
-
-# SELECT
-response = supabase.table('chat_sessions')\
-    .select('*')\
-    .eq('user_id', user_id)\
-    .order('created_at', desc=True)\
-    .execute()
-
-# UPDATE
-supabase.table('profiles')\
-    .update({"full_name": new_name})\
-    .eq('id', user_id)\
-    .execute()
-
-# DELETE
-supabase.table('chat_sessions')\
-    .delete()\
-    .eq('id', session_id)\
-    .execute()
+```env
+NEXT_PUBLIC_SUPABASE_URL=         # Supabase project URL
+NEXT_PUBLIC_SUPABASE_ANON_KEY=    # Supabase anon key
+SUPABASE_SERVICE_ROLE_KEY=        # Supabase service role key (server-only)
+GROQ_API_KEY=                     # Groq API key
+HUGGINGFACE_API_KEY=              # HuggingFace API key (for RAG embeddings)
+NEXT_PUBLIC_SITE_URL=             # Site URL for auth redirects
 ```
 
 ---
 
-## Session State Management
-
-### Core Session Variables
-
-```python
-# Authentication
-st.session_state.logged_in = False           # Login status
-st.session_state.user = None                 # Supabase user object
-st.session_state.access_token = None         # JWT access token
-st.session_state.refresh_token = None        # JWT refresh token
-
-# Navigation
-st.session_state.menu = "Chat"               # Current page
-
-# Language
-st.session_state.language = "en"             # User's language preference
-
-# Chat
-st.session_state.messages = []               # Current chat messages
-st.session_state.chat_sessions = {}          # User's chat sessions
-st.session_state.current_session_id = None   # Active session ID
-
-# Mood Tracking
-st.session_state.selected_mood = None        # Mood selection
-st.session_state.edit_mood = None            # Mood editing state
-
-# Wellness Advisory
-st.session_state.viewing_assessment_id = None  # Assessment being viewed
-
-# Feedback
-st.session_state.has_feedback_{session_id}_{index} = False
-st.session_state.feedback_type_{session_id}_{index} = None
-```
-
-### Session State Best Practices
-
-1. **Initialize in `main()` function**:
-   ```python
-   if 'logged_in' not in st.session_state:
-       st.session_state.logged_in = False
-   ```
-
-2. **Use descriptive keys**:
-   - Bad: `st.session_state.s1`, `st.session_state.data`
-   - Good: `st.session_state.current_session_id`, `st.session_state.chat_sessions`
-
-3. **Clear sensitive data on logout**:
-   ```python
-   st.session_state.logged_in = False
-   st.session_state.user = None
-   st.session_state.access_token = None
-   # Clear other user-specific data
-   ```
-
-4. **Dynamic keys for collections**:
-   Use formatted strings for feedback, editable items, etc.
-   ```python
-   key = f"has_feedback_{session_id}_{message_index}"
-   st.session_state[key] = True
-   ```
-
----
-
-## Testing & Deployment
-
-### Local Testing
-
-1. **Test with .env file**:
-   ```bash
-   streamlit run main_app_v7.py
-   ```
-
-2. **Test authentication flow**:
-   - Sign up with new email
-   - Log in with existing credentials
-   - Test logout and token expiration
-
-3. **Test all features**:
-   - Chat: Send messages, create sessions, delete conversations
-   - Wellness: Complete questionnaire, view assessments, download PDF
-   - Mood: Log moods, edit entries, view calendar
-   - Profile: Update details, change language
-
-### Deployment on Streamlit Cloud
-
-1. **Connect GitHub repository**
-2. **Set secrets** (Settings → Secrets):
-   ```toml
-   SUPABASE_URL = "https://your-project.supabase.co"
-   SUPABASE_KEY = "your-anon-key"
-   GROQ_API_KEY = "your-groq-api-key"
-   ```
-3. **Deploy main branch**
-4. **Monitor logs** for errors
-
-### Testing Checklist
-
-- [ ] Authentication (signup, login, logout)
-- [ ] Chat (send messages, new sessions, delete)
-- [ ] Wellness questionnaire (submit, view history, download PDF)
-- [ ] Mood tracking (log mood, edit, view calendar)
-- [ ] Profile management (update, language change)
-- [ ] Multi-language support (switch languages, verify translations)
-- [ ] Feedback system (rate responses, logout feedback)
-- [ ] Error handling (API failures, database errors)
-
----
-
-## Common Tasks
-
-### Adding a New Feature
-
-1. **Plan the feature**:
-   - Define user flow
-   - Identify database changes
-   - Design UI mockup
-
-2. **Update database schema** (if needed):
-   - Create new table in Supabase
-   - Add RLS policies
-   - Test CRUD operations
-
-3. **Add translations**:
-   Update `translations.py` with new strings for all languages
-
-4. **Implement feature**:
-   - Create function in `main_app_v7.py`
-   - Add to navigation menu
-   - Test with various inputs
-
-5. **Version the file**:
-   ```bash
-   cp main_app_v7.py main_app_v8.py
-   # Make changes in v8
-   ```
-
-### Modifying AI Prompts
-
-**Chat System Prompt** (in `MentalHealthChatbot.generate_response()`):
-```python
-system_content = f"""You are Animoa, a warm and empathetic mental health companion...
-Language: {language_map[language]}"""
-```
-
-**Recommendation Prompt** (in `generate_recommendations()`):
-```python
-prompt = f"""As a mental health professional, analyze these responses...
-Provide recommendations in {language_map[language]}."""
-```
-
-**Best Practices**:
-- Keep prompts concise but specific
-- Include language instruction for multilingual responses
-- Test with edge cases (e.g., crisis mentions, unclear input)
-- Adjust temperature for desired creativity level
-
-### Adding a New Language
-
-1. **Update `translations.py`**:
-   ```python
-   "fr": {  # Add French
-       "welcome": "Bienvenue à Animoa🧠💬",
-       # ... all translation keys
-   }
-   ```
-
-2. **Update language selector** (in `main_app_v7.py`):
-   ```python
-   language_options = {"English": "en", "Español": "es", "中文": "zh", "Français": "fr"}
-   ```
-
-3. **Test all UI elements** with new language
-
-### Debugging Session State Issues
-
-1. **Add debug panel**:
-   ```python
-   if st.checkbox("Debug Session State"):
-       st.json(dict(st.session_state))
-   ```
-
-2. **Check initialization**:
-   Ensure all keys are initialized in `main()` before use
-
-3. **Clear corrupted state**:
-   ```python
-   if st.button("Reset Session"):
-       for key in list(st.session_state.keys()):
-           del st.session_state[key]
-       st.rerun()
-   ```
-
----
-
-## Important Notes
-
-### Mental Health Considerations
-
-This application deals with sensitive mental health data. When working on features:
-
-1. **Privacy**: Never log user messages or personal data
-2. **Crisis Detection**: ✅ **IMPLEMENTED** - Detects crisis keywords (suicide, self-harm, etc.) and displays emergency resources (988 hotline, Crisis Text Line) in user's language (EN/ES/ZH)
-3. **Age Requirement**: Minimum age 13 (COPPA compliant, teens are high-need demographic for mental health support)
-4. **Disclaimers**: Maintain clear messaging that Animoa is not a replacement for professional help
-5. **Data Security**: Use Supabase RLS policies to protect user data
-
-### Known Issues & TODOs
-
-1. ✅ ~~**Devcontainer Configuration**~~: Fixed - now uses `main_app_v7.py`
-2. ✅ ~~**Version Cleanup**~~: Completed - all previous versions moved to `archive/` directory
-3. **Translation Completeness**: Verify all new UI strings have translations in all languages
-4. **PDF Styling**: Enhance `create_wellness_pdf()` with better formatting
-5. **Documentation**: See `VERSION_HISTORY.md` for detailed evolution of features across versions
-
-### Performance Optimization
-
-- **Groq API**: Fast inference (~1-2s response time), but rate-limited on free tier
-- **Supabase Queries**: Add indexes on `user_id`, `created_at` for faster queries
-- **Session State**: Minimize large objects in session state (cache database results sparingly)
-- **Image Loading**: `logo.png` is 196KB—consider optimizing for web
-
-### Security Best Practices
-
-1. **Never commit `.env` file** to repository
-2. **Use Supabase RLS** to restrict data access by user
-3. **Validate user input** before database operations
-4. **Sanitize chat messages** to prevent injection attacks
-5. **Rotate API keys** periodically
-
----
-
-## Quick Reference
-
-### Useful Commands
+## Commands
 
 ```bash
-# Run application
-streamlit run main_app_v7.py
-
-# Run with custom port
-streamlit run main_app_v7.py --server.port 8080
-
-# Disable CORS (for dev)
-streamlit run main_app_v7.py --server.enableCORS false
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Freeze current dependencies
-pip freeze > requirements.txt
-
-# View Git status
-git status
-
-# Commit changes
-git add .
-git commit -m "feat: add new feature"
-git push origin main
+npm install          # Install dependencies
+npm run dev          # Dev server at localhost:3000
+npm run build        # Production build (runs TypeScript + ESLint checks)
+npm run lint         # ESLint only
+npm run seed-knowledge  # Seed RAG knowledge base (npx tsx scripts/seed-knowledge-base.ts)
 ```
 
-### Streamlit Shortcuts
+---
 
-- `R` - Rerun app
-- `C` - Clear cache
-- `Ctrl+C` - Stop server
+## Crisis Detection
 
-### Common Error Messages
-
-| Error | Cause | Solution |
-|-------|-------|----------|
-| `AuthRetryableError` | Token expired | Refresh token or re-login |
-| `Invalid API key` | Wrong Groq/Supabase key | Check `.env` file |
-| `Table not found` | Database schema issue | Verify table exists in Supabase |
-| `Session state key error` | Uninitialized key | Initialize in `main()` |
+`lib/crisis-detection.ts` scans every user message for crisis keywords (suicide, self-harm, etc.). When detected, `components/crisis/CrisisAlert.tsx` displays emergency resources (988 Lifeline, Crisis Text Line, 911). This takes priority over the AI response.
 
 ---
 
-## Contact & Resources
+## Key Patterns
 
-- **Repository**: https://github.com/Swargambharath987/Project_Animoa
-- **Streamlit Docs**: https://docs.streamlit.io
-- **Groq API Docs**: https://console.groq.com/docs
-- **Supabase Docs**: https://supabase.com/docs
+- **Route groups**: `(auth)` and `(dashboard)` — separate layouts, shared under App Router
+- **Streaming**: Chat API uses SSE (`ReadableStream`) for real-time AI responses
+- **Session titles**: Auto-generated from first user message in a chat session
+- **Imports**: Use `@/` path alias (maps to project root via `tsconfig.json`)
+- **AI model**: `llama-3.3-70b-versatile` — temperature 0.7, max 500 tokens (chat) / 1000 tokens (assessment)
 
 ---
 
-*Last Updated: January 21, 2026*
-*Current Version: main_app_v7.py*
-*Recent Changes: Added crisis detection feature with multi-language support (EN/ES/ZH)*
+## Gotchas
+
+- `npm run dev` does NOT check types — only `npm run build` runs full TypeScript + ESLint. Always build before deploying.
+- Supabase clients are different for server vs browser — never import `lib/supabase/server.ts` in client components.
+- The `middleware.ts` matcher excludes static files and images from auth checks.
+- RAG silently fails — if responses seem generic, check that the knowledge base is seeded and `HUGGINGFACE_API_KEY` is set.
+
+---
+
+*Last updated: February 2026*

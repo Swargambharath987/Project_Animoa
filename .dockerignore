@@ -7,12 +7,12 @@ node_modules/
 # Archived old MVP files
 archive/
 
+# Documentation
+docs/
+*.md
+
 # Git
 .git/
-
-# Documentation
-*.md
-CLAUDE.md
 
 # Environment files (passed at runtime)
 .env
@@ -21,6 +21,3 @@ CLAUDE.md
 
 # OS files
 .DS_Store
-
-# Logo (not needed in container)
-logo.png

@@ -1,9 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Enable React strict mode for better development experience
   reactStrictMode: true,
 
-  // Optimize images from external sources if needed
+  // Required for Docker deployment (generates .next/standalone)
+  output: 'standalone',
+
   images: {
     domains: [],
   },

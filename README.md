@@ -1,47 +1,46 @@
 # Animoa
 
-A mental health companion that provides AI-powered conversations, validated wellness assessments, mood tracking, and personalized wellness reports.
+A mental health companion web app with AI-powered conversations, validated wellness assessments, mood tracking, and personalized recommendations.
 
 ## Features
 
-- **AI Chat** - Empathetic conversations powered by Groq LLM with crisis detection and multi-session support
-- **Wellness Assessments** - PHQ-2 and GAD-2 validated screening tools with AI-generated recommendations
-- **Mood Tracker** - Daily emoji-based logging with calendar visualization and trend analytics
-- **PDF Reports** - Downloadable professional wellness reports
-- **Multi-Language** - English, Spanish, and Mandarin Chinese
-- **Crisis Safety** - Detects distress signals and surfaces emergency resources (988, Crisis Text Line)
+- **AI Chat** — Empathetic conversations powered by Groq LLM with streaming responses and crisis detection
+- **Wellness Assessments** — PHQ-2 and GAD-2 validated screening tools with AI-generated recommendations
+- **Mood Tracker** — Daily emoji-based logging with calendar visualization and trend charts
+- **RAG-Enhanced Responses** — Evidence-based mental health techniques retrieved from a curated knowledge base
+- **PDF Reports** — Downloadable wellness reports
+- **Crisis Safety** — Detects distress signals and surfaces emergency resources (988, Crisis Text Line)
 
 ## Tech Stack
 
-- **Streamlit** - Web UI
-- **Groq** - LLM API (llama-3.3-70b-versatile)
-- **Supabase** - Auth + PostgreSQL
-- **ReportLab** - PDF generation
-- **Python 3.11+**
+- **Next.js 14** — App Router, server-side rendering
+- **TypeScript** — Strict mode
+- **Tailwind CSS** — Styling with custom Animoa brand colors
+- **Supabase** — Auth, PostgreSQL, pgvector (RAG)
+- **Groq** — LLM API (Llama 3.3 70B Versatile)
+- **HuggingFace** — Embedding API for RAG (bge-small-en-v1.5)
 
 ## Quick Start
 
 ```bash
 git clone https://github.com/Swargambharath987/Project_Animoa.git
 cd Project_Animoa
-pip install -r requirements.txt
+npm install
 ```
 
-Create a `.env` file:
-
-```env
-SUPABASE_URL=your-supabase-url
-SUPABASE_KEY=your-supabase-anon-key
-GROQ_API_KEY=your-groq-api-key
-```
-
-Run:
+Copy `.env.example` to `.env.local` and fill in your keys:
 
 ```bash
-streamlit run main_app_v7.py
+cp .env.example .env.local
 ```
 
-App runs at `http://localhost:8501`.
+Run the dev server:
+
+```bash
+npm run dev
+```
+
+App runs at `http://localhost:3000`.
 
 ## Docker
 
@@ -49,27 +48,17 @@ App runs at `http://localhost:8501`.
 docker compose up --build
 ```
 
-## Database Setup
-
-Set up the required tables in your Supabase SQL Editor. The schema includes `profiles`, `chat_sessions`, `chat_history`, `mood_logs`, and `questionnaire_responses`. See [CLAUDE.md](./CLAUDE.md#database-schema) for the complete SQL schema and RLS policies.
-
 ## Project Structure
 
 ```
-main_app_v7.py       # Production app (v7)
-translations.py      # UI translations (EN/ES/ZH)
-Dockerfile           # Container config
-archive/             # Previous versions (v1-v6)
-animoa-next/         # Next.js version
+app/           # Next.js routes and API endpoints
+components/    # React components (chat, mood, assessment, crisis)
+lib/           # Utilities (groq, rag, embeddings, supabase, crisis-detection)
+types/         # TypeScript interfaces
+docs/          # Planning docs and development log
+archive/       # Old Streamlit MVP (v1–v7)
+public/        # Static assets (logo)
 ```
-
-## Next.js Version
-
-A modern rewrite is available in [`animoa-next/`](./animoa-next/) with server-side rendering, streaming AI responses, and a refreshed UI. Deployed on Vercel.
-
-## Version History
-
-Seven iterations from a 152-line prototype to a 2,662-line application. See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for details.
 
 ## Disclaimer
 
